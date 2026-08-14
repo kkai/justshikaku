@@ -1,0 +1,22 @@
+No account, no login, no demo credentials needed. Everything works offline and
+all progress is stored on the device.
+
+There is one non-consumable in-app purchase, de.kaikunze.shikaku.full, which
+unlocks five of the seven technique lessons, the practice drills, the
+escalating teaching hints, the 10x10 and 12x12 boards, and the full
+statistics screen. Free play covers the rules tutorial, the first two
+lessons, 5x5 and 7x7 boards at every difficulty, best times, and an error
+check that flags a rectangle that cannot be part of the solution.
+
+Two things that may look inconsistent but are deliberate:
+
+1. Tapping a locked board size bounces the selection back and opens the
+   purchase screen instead of disabling the chip, so the feature stays
+   visible rather than hidden. The same applies to locked lesson rows.
+
+2. A rectangle whose size disagrees with its number is allowed to stay on
+   the board, marked with a red count. Free players' hints are errors-only,
+   so mistakes must be possible to make; the hint then points at them.
+
+Difficulty is never behind the purchase: a free player can play the hardest
+tier on the free board sizes.

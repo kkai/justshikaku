@@ -1,0 +1,21 @@
+Just Shikaku teaches you to play Shikaku properly, then gets out of the way.
+
+Shikaku is a puzzle of rectangles. The grid holds scattered numbers, and your job is to divide the whole grid into rectangles so that each one contains exactly one number, and that number is exactly how many cells the rectangle covers. No gaps, no overlaps. That is the whole rulebook. Getting good at it is another matter, and that is what this app is for.
+
+Seven lessons take you from the rules to the arguments experienced solvers stop noticing they make: primes that can only be strips, the cell that only one number can reach, the placement that would strand a corner, counting a walled-off region against what could ever fill it. Each lesson is a real board where the technique is the next move, not a page of text to read.
+
+When you get stuck in a real game, the hint button climbs a ladder. First a nudge, then the technique's name and rule, then the argument drawn right on your board: every rectangle that could hold the number appears, the impossible ones are struck out, and what remains is the answer you make yourself. It will lay the rectangle for you if you insist, but that is the last thing it offers rather than the first.
+
+Practice drills rehearse one technique at a time. Mastery counts only the deductions you worked out unaided, so your progress path shows what you can actually do.
+
+Every puzzle has exactly one solution and can be finished by reasoning alone. The app proves both before a board ever reaches you. You are never asked to guess.
+
+Drawing feels like the puzzle deserves: drag and a taut ink line snaps to the grid, the rectangle settles in like a laid mat, and a live count shows how many cells you have against how many you need.
+
+FREE
+The rules tutorial in full. The first two technique lessons. 5x5 and 7x7 boards at every difficulty, including the hardest. An error check that tells you when a rectangle cannot be part of the finished room. Best times.
+
+ONE PURCHASE UNLOCKS
+Five more lessons. Every practice drill. The hints that teach instead of just answering. 10x10 and 12x12 boards. Full statistics and your technique path.
+
+No ads, no subscription, no timers, no energy, no coins. Everything works offline.

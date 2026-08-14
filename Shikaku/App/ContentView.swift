@@ -1,0 +1,47 @@
+//
+//  ContentView.swift
+//  Shikaku
+//
+
+import SwiftUI
+
+struct ContentView: View {
+    @State private var path: [Route] = []
+    @Environment(PaywallPresenter.self) private var paywall
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            HomeView(path: $path)
+                .navigationDestination(for: Route.self) { route in
+                    destination(for: route)
+                }
+        }
+        .sheet(item: paywallBinding) { feature in
+            PaywallView(feature: feature)
+        }
+    }
+
+    /// `presented` is private(set) on the presenter; dismissal goes through
+    /// `dismiss()` so there is exactly one way the sheet closes.
+    private var paywallBinding: Binding<PaidFeature?> {
+        Binding(
+            get: { paywall.presented },
+            set: { newValue in if newValue == nil { paywall.dismiss() } })
+    }
+
+    @ViewBuilder
+    private func destination(for route: Route) -> some View {
+        switch route {
+        case .play(let size, let difficulty):
+            PlayHostView(size: size, difficulty: difficulty)
+        case .resume:
+            ResumeGameView()
+        case .learn:
+            LearnMenuView()
+        case .stats:
+            StatsView()
+        case .settings:
+            SettingsView()
+        }
+    }
+}

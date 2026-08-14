@@ -1,0 +1,109 @@
+# Visual & Motion Design Direction
+
+Brief: *unique, minimal, functional, sophisticated, animated.*
+
+## 1. The thesis: the tatami room
+
+The family holds three identities: Kakuro is ink-and-indigo on washi
+(newspaper, serif), Hashi is an ukiyo-e sea (Prussian blue, rounded stamps),
+Numeriqo is monochrome graphite (grotesque, tier accent). Shikaku takes the
+one subject-true direction none of them occupies.
+
+Shikaku (四角) means "rectangle", and a solved board *is* a tatami floor plan:
+a room partitioned into rectangular mats. So the game leans into what it
+already is. **The player is laying out a room.** Committed rectangles are
+mats; the drag is a carpenter's ink line; the finished board is a floor you
+could stand on.
+
+What this buys, concretely:
+- The board's one large colour (mat green) is **earned state** — an empty
+  board is quiet straw paper; colour arrives only as the player commits mats.
+  Progress is visible at a glance without a single progress bar.
+- The signature interaction and the signature aesthetic are the same thing
+  (see §4), instead of decoration applied on top.
+
+## 2. Palette
+
+Light/dark pairs via `ThemeRGBA` (see ENGINEERING.md for why the pattern is
+load-bearing). Colour is reserved for meaning; the chrome is quiet.
+
+| Token | Light | Dark | Role |
+|---|---|---|---|
+| `floor` | `#EFE9DA` warm straw paper | `#17140F` warm lacquer near-black | the field behind the board |
+| `surface` | `#FFFFFF` | `#221E17` | cards, sheets |
+| `ink` | `#26231C` sumi charcoal | `#ECE8DC` | clue numerals, primary text |
+| `inkSoft` | ink @ 0.55 | ink @ 0.55 | secondary labels (raise if contrast audit flags) |
+| `mat` | `#8A9B6E` igusa green @ 0.30 wash | `#55684A` @ 0.38 wash | committed rectangle fill — the only large colour |
+| `heri` | `#3E4A35` deep green-charcoal | `#93A583` | mat borders (the woven edge band) |
+| `inkLine` | `#26231C` | `#ECE8DC` | the drag preview stroke (sumitsubo line) |
+| `kaki` | `#C4572E` persimmon | `#D97B52` | errors + the win stamp — never on screen together |
+| `hairline` | ink @ 0.13 | ink @ 0.13 | grid |
+
+The empty grid is drawn as **dots at lattice intersections plus a fine
+hairline**, so the untouched board reads as graph paper on straw — a plan
+awaiting a room — and committed mats visually replace the grid inside their
+bounds.
+
+## 3. Type
+
+The carpenter's-drawing voice: **monospaced digits** for every numeral
+(`design: .monospaced`, semibold — clue values, timers, area badges; digits
+never shift as they change) and the **default grotesque** for chrome (quiet,
+per Numeriqo's finding that SF Rounded reads as a friendly consumer app and
+fights an ink surface). Distinct from all three siblings: Kakuro serif,
+Hashi rounded, Numeriqo grotesque-with-plain-digits.
+
+A satisfied clue's numeral steps from `regular` to `semibold` and from `ink`
+to `heri` — the number relaxes once it's housed.
+
+## 4. The signature: the sumitsubo line
+
+One aesthetic risk, spent on the core interaction. The drag preview is a
+**taut carpenter's ink snap-line**: a thin `inkLine` rectangle with slightly
+elastic corners while the finger moves, plus a live area badge (`6/8`,
+monospaced). On release:
+
+- valid commit → the line **snaps** to the grid (corners square instantly),
+  the mat fill fades in beneath it, and the mat *settles* — scale 1.02 → 1.0
+  with a soft shadow that fades as it lands. Haptic: a low, soft thud.
+- reject → the line shakes once and evaporates. Haptic: warning.
+
+Committed mats carry a barely-there weave: 1pt lines at ~4% opacity running
+**along the rectangle's long axis** (real tatami alternate weave direction).
+Orientation is thereby encoded, not decorated. Squares get no weave.
+
+## 5. Motion
+
+Named tokens only in `Motion.swift`; views never write inline animation
+values. `Motion.settle`, `Motion.snapLine`, `Motion.argumentStagger`,
+`Motion.matReject`, `Motion.winSweep`. All honor
+`accessibilityReduceMotion` (settle becomes a plain fade; the win sweep
+becomes a simultaneous tint).
+
+**Win**: the room finishes. Mats re-settle in the order laid, a light sweep
+crosses the floor (a shoji screen sliding open), and the kaki **hanko stamp**
+lands in the corner with the solve time. This is the only celebration in the
+app and the only time `kaki` appears outside an error.
+
+## 6. Layout tokens
+
+Port Numeriqo's `Design/Layout.swift` idea day one: radius scale
+(control/card/sheet), 4pt spacing scale, button vocabulary
+(`.primary`/`.secondary`/`.quiet`) — the family measured what happens without
+it (five corner radii, fourteen button treatments).
+
+Mat corners are **square with a hairline inner inset** — mats are mats, not
+app buttons; the roundness budget is spent on cards and sheets only.
+
+## 7. App icon
+
+A valid 4-cell clue: a straw field, one drawn mat containing a "4", partition
+lines suggesting the rest of the room. True statement about the game, unique
+artefact of the genre. Generated by `Tools/AppIcon/make_icons.py` (never
+hand-edit PNGs), checked at 40pt before committing — an icon that only works
+at 1024 is not an icon.
+
+## 8. Sound
+
+Not in v1, same reasoning as Numeriqo: audio that cannot be evaluated in this
+environment ships unheard, and unheard audio is worse than none.

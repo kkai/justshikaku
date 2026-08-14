@@ -1,0 +1,1 @@
+Divide the grid into rectangles, one number each. Every board has exactly one solution you can reason out, and the hints teach instead of answering for you.

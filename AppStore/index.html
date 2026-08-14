@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Just Shikaku ,  learn to lay the mats</title>
+<meta name="description" content="Just Shikaku teaches you to play Shikaku properly. Seven named techniques, hints that explain the argument, and every puzzle solvable by reasoning alone.">
+<style>
+  /* The app's own palette, from Theme.swift: a tatami room. Straw-paper
+     floor, igusa mats with a woven heri edge, sumi ink. No web fonts: the
+     system faces are what the app uses, and a privacy-minded page that
+     phones a font CDN would be saying one thing and doing another. */
+  :root {
+    --straw: #efe9da; --surface: #ffffff; --ink: #26231c;
+    --ink-soft: rgba(38,35,28,.66); --heri: #3e4a35; --mat: #c8d1b7;
+    --mat-wash: rgba(138,155,110,.22); --kaki: #c4572e;
+    --hairline: rgba(38,35,28,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --straw: #17140f; --surface: #221e17; --ink: #ece8dc;
+            --ink-soft: rgba(236,232,220,.66); --heri: #93a583; --mat: #3c4a35;
+            --mat-wash: rgba(147,165,131,.22); --kaki: #d97b52;
+            --hairline: rgba(236,232,220,.14); }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--straw); color: var(--ink);
+         font: 17px/1.65 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 64px 0 8px; text-align: center; }
+  .eyebrow { font-size: 14px; font-weight: 600; letter-spacing: .34em;
+             color: var(--ink-soft); text-transform: uppercase; }
+  h1 { font-size: 56px; font-weight: 800; letter-spacing: -.03em; margin: 6px 0 14px; }
+  /* The signature, drawn in the game's own language: a room split into a
+     square mat and a strip. Same statement as the app icon. */
+  .lockup { display: flex; align-items: center; justify-content: center; gap: 0; }
+  .lockup span { display: block; height: 22px; background: var(--mat);
+                 border: 2.5px solid var(--heri); }
+  .lockup .sq { width: 22px; border-right-width: 1.25px; }
+  .lockup .strip { width: 46px; border-left-width: 1.25px; }
+  .tagline { font-size: 21px; color: var(--ink-soft); margin: 22px 0 0; text-align: center; }
+  .lede { font-size: 19px; margin: 34px 0 0; }
+  h2 { font-size: 24px; letter-spacing: -.02em; margin: 52px 0 10px; }
+  h3 { font-size: 17px; margin: 26px 0 4px; }
+  p { margin: 0 0 14px; }
+  a { color: var(--heri); }
+  .card { background: var(--surface); border-radius: 18px; padding: 26px; margin: 22px 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 42px; } }
+  .cols h3 { margin-top: 0; }
+  ul { margin: 0; padding-left: 20px; } li { margin-bottom: 6px; }
+  /* Playable board */
+  #board { display: block; margin: 0 auto; touch-action: manipulation; }
+  #board .cell { cursor: pointer; }
+  .boardnote { text-align: center; color: var(--ink-soft); font-size: 15px; min-height: 26px; margin: 6px 0 0; }
+  .btn { display: inline-block; background: var(--heri); color: var(--straw);
+         border: 0; border-radius: 11px; padding: 9px 16px; font: inherit;
+         font-weight: 600; font-size: 15px; cursor: pointer; }
+  footer { border-top: 1px solid var(--hairline); margin-top: 60px; padding: 22px 0 70px;
+           color: var(--ink-soft); font-size: 14px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Just</div>
+  <h1>Shikaku</h1>
+  <div class="lockup" aria-hidden="true">
+    <span class="sq"></span><span class="strip"></span>
+  </div>
+  <p class="tagline">Learn to lay the mats.</p>
+</header>
+
+<p class="lede">Shikaku is a puzzle of rectangles. A grid holds a few numbers, and your job
+is to split the whole grid into rectangles so that each one contains exactly one number,
+and that number is the rectangle's area. A 6 sits in a rectangle of six cells, a 1 in a
+single cell. That is the whole rulebook. Getting good at it is another matter, and that is
+what the app is for.</p>
+
+<h2>Try it</h2>
+<div class="card">
+  <p style="margin-top:0;color:var(--ink-soft);font-size:15px">Tap a cell, then tap the
+  opposite corner of the rectangle you want to lay. Tap a laid rectangle to lift it again.
+  This is the board the app's rules lesson uses.</p>
+  <svg id="board" width="374" height="374" viewBox="0 0 374 374" role="application"
+       aria-label="A small Shikaku puzzle you can solve"></svg>
+  <p class="boardnote" id="note">Three numbers, three rectangles, one room.</p>
+  <p style="text-align:center;margin:10px 0 0"><button class="btn" id="reset">Start over</button></p>
+</div>
+
+<h2>How it teaches</h2>
+<p>Most puzzle apps leave you to work out the technique yourself, or hand you the answer
+when you are stuck. Just Shikaku does neither.</p>
+
+<h3>Seven techniques, one idea at a time</h3>
+<p>The game runs on seven named techniques: Ones, Prime Strips, Only Fit, Common Ground,
+Lone Reacher, No Orphans and Count the Room. Each has its own lesson, a short board where
+the technique is the way through rather than a page of text to read, and the sequence runs
+from the first easy deduction to the counting endgame.</p>
+
+<h3>Hints that name the technique</h3>
+<p>Ask for a hint and the app points you at a region first. Ask again and it names the
+technique and states the rule. Ask again and it draws the argument on the board. Only the
+last step lays the rectangle for you, and taking it is a deliberate act.</p>
+
+<h3>Mastery you actually earned</h3>
+<p>Practice drills rehearse one technique at a time. Progress counts only the deductions
+you worked out unaided, so the path reflects what you can really do.</p>
+
+<h2>No guessing, ever</h2>
+<p>Every puzzle has exactly one solution, and every puzzle can be finished by reasoning
+alone. The app proves both before a board ever reaches you. If you are stuck, it is never
+because the board is unfair; there is always a next deduction waiting to be found.</p>
+
+<h2>What it costs</h2>
+<div class="cols">
+  <div class="card">
+    <h3>Free</h3>
+    <ul>
+      <li>The rules tutorial and the first two lessons, Ones and Prime Strips</li>
+      <li>5x5 and 7x7 boards, every difficulty</li>
+      <li>An error check when something has gone wrong</li>
+      <li>Your best times</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>One purchase</h3>
+    <ul>
+      <li>Five more lessons</li>
+      <li>Every practice drill</li>
+      <li>Hints that teach instead of answering</li>
+      <li>The 10x10 and 12x12 boards</li>
+      <li>Stats and your technique path</li>
+    </ul>
+  </div>
+</div>
+<p>No ads, no subscription, and none of the timers, energy or coins that puzzle apps tend
+to arrive with. Everything works offline.</p>
+
+<h2>Privacy</h2>
+<div class="card">
+  <p style="margin:0">The app collects nothing. No account, no analytics, no advertising.
+  Your progress is stored on your device and never sent anywhere, and apart from the App
+  Store purchase check the app makes no network requests at all.
+  <a href="justshikaku-privacy.html">Full privacy policy</a>.</p>
+</div>
+
+<h2>Support</h2>
+
+<h3>I bought the unlock and it is gone</h3>
+<p>Settings, then Restore purchases. It is always available, including when the app already
+thinks it is unlocked. If nothing comes back, check you are signed in with the Apple Account
+that made the purchase.</p>
+
+<h3>Does it work offline?</h3>
+<p>Yes, entirely. Puzzles are generated on your device. The only time the app talks to the
+network is to ask the App Store whether the unlock has been purchased.</p>
+
+<h3>Where is my progress kept?</h3>
+<p>On the device, in the app's own storage. There is no cloud sync, so deleting the app
+deletes your stats, best times and lesson progress.</p>
+
+<h3>This board looks unsolvable</h3>
+<p>It isn't. Every shipped puzzle is checked twice before you see it: once to prove it has
+exactly one solution, and once to prove the app's own techniques can finish it. If you are
+stuck, the hint button will point you at the next deduction. If you still think a board is
+wrong, mail me and say which one.</p>
+
+<h3>Something else</h3>
+<p><a href="mailto:kai.kunze@gmail.com">kai.kunze@gmail.com</a>.</p>
+
+<footer>
+  Made by <a href="https://kaikunze.de/">Kai Kunze</a> &middot;
+  <a href="justshikaku-privacy.html">Privacy</a> &middot;
+  <a href="https://github.com/kkai/justshikaku">Source</a>
+</footer>
+
+</div>
+
+<script>
+(function () {
+  // The rules lesson's board, exactly as the app's tutorial defines it: a
+  // 3x3 room that splits into a 1, a 2 and a 6. A real board the app ships,
+  // not a mock-up.
+  var N = 3, CELL = 110, PAD = 22;
+  var clues = [
+    { col: 0, row: 0, value: 1 },
+    { col: 2, row: 0, value: 2 },
+    { col: 0, row: 2, value: 6 }
+  ];
+  var mats = [];        // laid rectangles: {c0, r0, c1, r1}
+  var anchor = null;    // first tapped cell, or null
+  var solved = false;
+
+  var svg = document.getElementById('board');
+  var note = document.getElementById('note');
+  var NS = 'http://www.w3.org/2000/svg';
+
+  function el(name, attrs) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function px(col) { return PAD + col * CELL; }
+  function matAt(col, row) {
+    for (var i = 0; i < mats.length; i++) {
+      var m = mats[i];
+      if (col >= m.c0 && col <= m.c1 && row >= m.r0 && row <= m.r1) return i;
+    }
+    return -1;
+  }
+  function cluesIn(c0, r0, c1, r1) {
+    return clues.filter(function (q) {
+      return q.col >= c0 && q.col <= c1 && q.row >= r0 && q.row <= r1;
+    });
+  }
+
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    // The straw floor and its lattice.
+    svg.appendChild(el('rect', { x: PAD, y: PAD, width: N * CELL, height: N * CELL,
+                                 fill: 'var(--straw)' }));
+    for (var i = 1; i < N; i++) {
+      svg.appendChild(el('line', { x1: px(i), y1: PAD, x2: px(i), y2: PAD + N * CELL,
+                                   stroke: 'var(--hairline)', 'stroke-width': 1.5 }));
+      svg.appendChild(el('line', { x1: PAD, y1: px(i), x2: PAD + N * CELL, y2: px(i),
+                                   stroke: 'var(--hairline)', 'stroke-width': 1.5 }));
+    }
+    // Laid mats: igusa fill, heri edge.
+    mats.forEach(function (m) {
+      svg.appendChild(el('rect', {
+        x: px(m.c0) + 3, y: px(m.r0) + 3,
+        width: (m.c1 - m.c0 + 1) * CELL - 6, height: (m.r1 - m.r0 + 1) * CELL - 6,
+        fill: 'var(--mat-wash)', stroke: 'var(--heri)', 'stroke-width': 4, rx: 4
+      }));
+    });
+    // The anchor, marked like the snap-line's starting pin.
+    if (anchor !== null) {
+      svg.appendChild(el('rect', {
+        x: px(anchor.col) + 7, y: px(anchor.row) + 7, width: CELL - 14, height: CELL - 14,
+        fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2.5,
+        'stroke-dasharray': '7 6', rx: 4
+      }));
+    }
+    // The room's frame.
+    svg.appendChild(el('rect', { x: PAD, y: PAD, width: N * CELL, height: N * CELL,
+                                 fill: 'none', stroke: 'var(--ink)', 'stroke-width': 5 }));
+    // Clue numerals, in the plan's monospaced hand.
+    clues.forEach(function (q) {
+      var inMat = matAt(q.col, q.row) >= 0;
+      var t = el('text', {
+        x: px(q.col) + CELL / 2, y: px(q.row) + CELL / 2 + 12, 'text-anchor': 'middle',
+        fill: inMat ? 'var(--heri)' : 'var(--ink)',
+        'font-size': 34, 'font-weight': inMat ? 400 : 600,
+        'font-family': 'ui-monospace, Menlo, monospace'
+      });
+      t.textContent = q.value;
+      svg.appendChild(t);
+    });
+    // One invisible tap target per cell, on top of everything.
+    for (var row = 0; row < N; row++) {
+      for (var col = 0; col < N; col++) {
+        (function (c, r) {
+          var g = el('rect', {
+            x: px(c), y: px(r), width: CELL, height: CELL,
+            fill: 'transparent', class: 'cell', role: 'button', tabindex: 0
+          });
+          g.setAttribute('aria-label', 'Cell ' + (c + 1) + ', ' + (r + 1));
+          g.addEventListener('click', function () { pick(c, r); });
+          g.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(c, r); }
+          });
+          svg.appendChild(g);
+        })(col, row);
+      }
+    }
+  }
+
+  function pick(col, row) {
+    if (solved) return;
+    if (anchor === null) {
+      var k = matAt(col, row);
+      if (k >= 0) { mats.splice(k, 1); say('Lifted. The rest of your work stands.'); draw(); return; }
+      anchor = { col: col, row: row };
+      say('Now tap the opposite corner of the rectangle.');
+      draw(); return;
+    }
+    var c0 = Math.min(anchor.col, col), c1 = Math.max(anchor.col, col);
+    var r0 = Math.min(anchor.row, row), r1 = Math.max(anchor.row, row);
+    anchor = null;
+    for (var c = c0; c <= c1; c++) {
+      for (var r = r0; r <= r1; r++) {
+        if (matAt(c, r) >= 0) { say('That would overlap a mat you have already laid.'); draw(); return; }
+      }
+    }
+    var inside = cluesIn(c0, r0, c1, r1);
+    if (inside.length === 0) { say('Every rectangle needs exactly one number inside it.'); draw(); return; }
+    if (inside.length > 1) { say('Only one number per rectangle. This one holds ' + inside.length + '.'); draw(); return; }
+    var area = (c1 - c0 + 1) * (r1 - r0 + 1);
+    if (area !== inside[0].value) {
+      say('The ' + inside[0].value + ' needs a rectangle of exactly ' + inside[0].value +
+          (inside[0].value === 1 ? ' cell' : ' cells') + '. This one covers ' + area + '.');
+      draw(); return;
+    }
+    mats.push({ c0: c0, r0: r0, c1: c1, r1: r1 });
+    check();
+    draw();
+  }
+
+  function check() {
+    var covered = mats.reduce(function (n, m) {
+      return n + (m.c1 - m.c0 + 1) * (m.r1 - m.r0 + 1);
+    }, 0);
+    if (covered === N * N) {
+      solved = true;
+      say('Solved. Every number has its rectangle, and the room is full.');
+    } else {
+      say('');
+    }
+  }
+
+  function say(text) { note.textContent = text || ' '; }
+
+  document.getElementById('reset').addEventListener('click', function () {
+    mats = []; anchor = null; solved = false;
+    say('Three numbers, three rectangles, one room.');
+    draw();
+  });
+
+  draw();
+})();
+</script>
+</body>
+</html>

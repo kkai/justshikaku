@@ -1,0 +1,354 @@
+//
+//  BoardView.swift
+//  Shikaku
+//
+//  The board: one absolutely-positioned layer stack against BoardGeometry —
+//  lattice → mats → clue numerals → drag preview. Deliberately split into
+//  small views with explicitly-typed intermediates: three sibling views hit
+//  "unable to type-check this expression in reasonable time" and the fix is
+//  documented in docs/ENGINEERING.md. Do not re-inline.
+//
+
+import SwiftUI
+
+struct BoardView: View {
+    let game: ShikakuGame
+
+    var body: some View {
+        GeometryReader { proxy in
+            let geo = BoardGeometry(size: game.puzzle.size, container: proxy.size)
+            ZStack(alignment: .topLeading) {
+                LatticeView(geo: geo)
+                MatsLayer(game: game, geo: geo)
+                CluesLayer(game: game, geo: geo)
+                PreviewLayer(game: game, geo: geo)
+                if let hint = game.activeHint {
+                    ArgumentOverlay(hint: hint, geo: geo)
+                }
+            }
+            .contentShape(Rectangle())
+            .gesture(dragGesture(geo: geo))
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+
+    private func dragGesture(geo: BoardGeometry) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { value in
+                // Anchor from startLocation, not the first onChanged location:
+                // a fast flick's first event can arrive already at the
+                // endpoint, which would collapse the drag into a tap.
+                game.dragChanged(
+                    anchor: geo.clampedCell(at: value.startLocation),
+                    current: geo.clampedCell(at: value.location))
+            }
+            .onEnded { _ in
+                game.dragEnded()
+            }
+    }
+}
+
+// MARK: - Lattice
+
+/// Graph paper on straw: fine hairlines with dots at the intersections —
+/// a plan awaiting a room. Committed mats visually replace it inside their
+/// bounds.
+private struct LatticeView: View {
+    let geo: BoardGeometry
+
+    var body: some View {
+        let lines = LatticeShape(geo: geo)
+        let dots = LatticeDots(geo: geo)
+        ZStack(alignment: .topLeading) {
+            lines.stroke(Theme.hairline, lineWidth: 1)
+            dots.fill(Theme.hairline)
+        }
+    }
+}
+
+private struct LatticeShape: Shape {
+    let geo: BoardGeometry
+
+    func path(in _: CGRect) -> Path {
+        var path = Path()
+        let n = geo.size
+        for i in 0...n {
+            let x = geo.origin.x + CGFloat(i) * geo.cellSize
+            path.move(to: CGPoint(x: x, y: geo.origin.y))
+            path.addLine(to: CGPoint(x: x, y: geo.origin.y + geo.boardLength))
+            let y = geo.origin.y + CGFloat(i) * geo.cellSize
+            path.move(to: CGPoint(x: geo.origin.x, y: y))
+            path.addLine(to: CGPoint(x: geo.origin.x + geo.boardLength, y: y))
+        }
+        return path
+    }
+}
+
+private struct LatticeDots: Shape {
+    let geo: BoardGeometry
+
+    func path(in _: CGRect) -> Path {
+        var path = Path()
+        let r: CGFloat = 1.6
+        for row in 0...geo.size {
+            for col in 0...geo.size {
+                let x = geo.origin.x + CGFloat(col) * geo.cellSize
+                let y = geo.origin.y + CGFloat(row) * geo.cellSize
+                path.addEllipse(in: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r))
+            }
+        }
+        return path
+    }
+}
+
+// MARK: - Mats
+
+private struct MatsLayer: View {
+    let game: ShikakuGame
+    let geo: BoardGeometry
+
+    var body: some View {
+        ForEach(game.board.placed, id: \.self) { placed in
+            MatView(placed: placed, game: game, geo: geo)
+        }
+        ClaimsLayer(game: game, geo: geo)
+    }
+}
+
+/// One committed mat: igusa fill, heri edge, a barely-there weave running
+/// along the long axis (real tatami alternate weave direction — orientation
+/// is encoded, not decorated; squares get no weave), and a red have/need
+/// badge when the area disagrees with the clue.
+private struct MatView: View {
+    let placed: PlacedRect
+    let game: ShikakuGame
+    let geo: BoardGeometry
+
+    @State private var settled = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(ProgressStore.self) private var progress
+
+    var body: some View {
+        let frame: CGRect = geo.rect(for: placed.rect)
+        // A rule-level conflict (wrong area) always shows; a solution-level
+        // mistake shows only when the player asked to see mistakes — those
+        // are the locally-legal wrong mats that let a player drift.
+        let conflict: Bool = game.areaConflict(placed)
+            || (progress.settings.errorFeedback && game.isWrong(placed))
+        ZStack(alignment: .topTrailing) {
+            matBody(frame: frame, conflict: conflict)
+            // The have/need badge belongs to area conflicts only — a
+            // solution-level mistake has the right count, just the wrong home.
+            if game.areaConflict(placed) {
+                conflictBadge
+                    .padding(3)
+            }
+        }
+        .frame(width: frame.width, height: frame.height)
+        .position(x: frame.midX, y: frame.midY)
+        .scaleEffect(settled || reduceMotion ? 1.0 : 1.02)
+        .shadow(color: .black.opacity(settled || reduceMotion ? 0 : 0.18), radius: 6, y: 2)
+        .onAppear {
+            withAnimation(reduceMotion ? nil : Motion.settle) { settled = true }
+        }
+        .accessibilityElement()
+        .accessibilityLabel(matAccessibilityLabel(conflict: conflict))
+    }
+
+    @ViewBuilder
+    private func matBody(frame: CGRect, conflict: Bool) -> some View {
+        let weave = WeaveShape(horizontal: placed.rect.width >= placed.rect.height,
+                               isSquare: placed.rect.width == placed.rect.height)
+        Rectangle()
+            .fill(Theme.mat)
+            .overlay(weave.stroke(Theme.heri.opacity(0.10), lineWidth: 1))
+            .overlay(
+                Rectangle()
+                    .strokeBorder(conflict ? Theme.kaki : Theme.heri, lineWidth: 1.5)
+            )
+    }
+
+    private var conflictBadge: some View {
+        let need: Int = game.puzzle.clues[placed.clueIndex].value
+        return Text("\(placed.rect.area)/\(need)")
+            .font(Theme.numberFont(size: geo.badgeSize * 0.8))
+            .foregroundStyle(Theme.kaki)
+            .padding(.horizontal, 3)
+            .background(Theme.surface.opacity(0.85), in: RoundedRectangle(cornerRadius: 3))
+    }
+
+    private func matAccessibilityLabel(conflict: Bool) -> String {
+        let value = game.puzzle.clues[placed.clueIndex].value
+        let shape = "\(placed.rect.width) by \(placed.rect.height)"
+        return conflict
+            ? "Mat \(shape), holds \(placed.rect.area) cells but its clue needs \(value)"
+            : "Mat \(shape) for the \(value)"
+    }
+}
+
+/// Weave stripes along the long axis, clipped by the mat that overlays this.
+private struct WeaveShape: Shape {
+    let horizontal: Bool
+    let isSquare: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard !isSquare else { return path }
+        let pitch: CGFloat = 6
+        if horizontal {
+            var y = rect.minY + pitch
+            while y < rect.maxY {
+                path.move(to: CGPoint(x: rect.minX + 2, y: y))
+                path.addLine(to: CGPoint(x: rect.maxX - 2, y: y))
+                y += pitch
+            }
+        } else {
+            var x = rect.minX + pitch
+            while x < rect.maxX {
+                path.move(to: CGPoint(x: x, y: rect.minY + 2))
+                path.addLine(to: CGPoint(x: x, y: rect.maxY - 2))
+                x += pitch
+            }
+        }
+        return path
+    }
+}
+
+/// Hint-applied claim marks: a small heri dot in the cell's corner saying
+/// "this cell belongs to that clue" — how elimination-only hint steps
+/// visibly apply.
+private struct ClaimsLayer: View {
+    let game: ShikakuGame
+    let geo: BoardGeometry
+
+    var body: some View {
+        let claims: [(Cell, Int)] = game.board.claims.sorted { $0.key < $1.key }
+        ForEach(claims, id: \.0) { cell, _ in
+            let frame: CGRect = geo.rect(for: cell)
+            Circle()
+                .fill(Theme.heri)
+                .frame(width: 5, height: 5)
+                .position(x: frame.minX + 7, y: frame.minY + 7)
+        }
+    }
+}
+
+// MARK: - Clues
+
+private struct CluesLayer: View {
+    let game: ShikakuGame
+    let geo: BoardGeometry
+
+    var body: some View {
+        let satisfied: [Bool] = game.isClueSatisfied
+        ForEach(Array(game.puzzle.clues.enumerated()), id: \.offset) { index, clue in
+            ClueNumeral(clue: clue, isSatisfied: satisfied[index], geo: geo)
+        }
+    }
+}
+
+/// A satisfied clue relaxes: lighter weight, heri ink — the number is housed.
+private struct ClueNumeral: View {
+    let clue: Clue
+    let isSatisfied: Bool
+    let geo: BoardGeometry
+
+    var body: some View {
+        let center: CGPoint = geo.center(for: clue.cell)
+        Text("\(clue.value)")
+            .font(isSatisfied ? Theme.satisfiedClueFont(size: geo.clueSize)
+                              : Theme.clueFont(size: geo.clueSize))
+            .foregroundStyle(isSatisfied ? Theme.heri : Theme.ink)
+            .position(center)
+            .animation(Motion.chrome, value: isSatisfied)
+            .accessibilityLabel("Clue \(clue.value)\(isSatisfied ? ", housed" : "")")
+    }
+}
+
+// MARK: - Drag preview
+
+private struct PreviewLayer: View {
+    let game: ShikakuGame
+    let geo: BoardGeometry
+
+    var body: some View {
+        if let preview = game.preview {
+            SnapLineView(preview: preview, game: game, geo: geo)
+        }
+        if let rejected = game.rejectedPreview {
+            RejectedView(rect: rejected, geo: geo)
+        }
+    }
+}
+
+/// The sumitsubo line: a taut ink rectangle tracking the finger, with a live
+/// area badge once exactly one clue is inside.
+private struct SnapLineView: View {
+    let preview: ShikakuGame.DragPreview
+    let game: ShikakuGame
+    let geo: BoardGeometry
+
+    var body: some View {
+        let frame: CGRect = geo.rect(for: preview.rect)
+        ZStack(alignment: .topLeading) {
+            conflictWash
+            Rectangle()
+                .fill(Theme.inkLine.opacity(0.05))
+                .overlay(Rectangle().strokeBorder(Theme.inkLine, lineWidth: 2))
+                .frame(width: frame.width, height: frame.height)
+                .position(x: frame.midX, y: frame.midY)
+                .animation(Motion.snapLine, value: preview.rect)
+            badge(frame: frame)
+        }
+        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var conflictWash: some View {
+        ForEach(preview.conflictCells, id: \.self) { cell in
+            let f: CGRect = geo.rect(for: cell)
+            Rectangle()
+                .fill(Theme.kakiWash)
+                .frame(width: f.width, height: f.height)
+                .position(x: f.midX, y: f.midY)
+        }
+    }
+
+    @ViewBuilder
+    private func badge(frame: CGRect) -> some View {
+        if let clueIndex = preview.clueIndex {
+            let need: Int = game.puzzle.clues[clueIndex].value
+            let have: Int = preview.rect.area
+            Text("\(have)/\(need)")
+                .font(Theme.numberFont(size: geo.badgeSize))
+                .foregroundStyle(have == need ? Theme.heri : Theme.ink)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 1)
+                .background(Theme.surface.opacity(0.9), in: RoundedRectangle(cornerRadius: 4))
+                .position(x: frame.midX, y: frame.minY - geo.badgeSize)
+        }
+    }
+}
+
+/// A rejected drag shakes off and evaporates.
+private struct RejectedView: View {
+    let rect: GridRect
+    let geo: BoardGeometry
+
+    @State private var shake = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        let frame: CGRect = geo.rect(for: rect)
+        Rectangle()
+            .strokeBorder(Theme.kaki, lineWidth: 2)
+            .frame(width: frame.width, height: frame.height)
+            .position(x: frame.midX, y: frame.midY)
+            .offset(x: shake || reduceMotion ? 0 : 5)
+            .opacity(shake ? 0 : 0.9)
+            .onAppear {
+                withAnimation(reduceMotion ? Motion.chrome : Motion.matReject) { shake = true }
+            }
+            .allowsHitTesting(false)
+    }
+}
