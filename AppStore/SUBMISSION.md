@@ -19,23 +19,35 @@ build 1; the version sits in `PREPARE_FOR_SUBMISSION`. **The final steps are you
   review screenshot `COMPLETE` (2048×2732), promo image healthy.
 - `whatsNew` stays empty: it returns 409 on a first version.
 
-## 1. What is left — both yours
+## 1. What is left — all of it yours, all of it in the ASC web UI
 
-- [ ] **App Privacy → "Data Not Collected".** The only field with no public
-      API. It is the only answer consistent with `PrivacyInfo.xcprivacy`
-      (UserDefaults / CA92.1) and the published privacy policy.
-- [ ] **Add the IAP to the version, then press "Add for Review".** On the
-      1.0 version page, section "In-App Purchases and Subscriptions", add
-      **Shikaku Full** BEFORE submitting. See §2 — this exact omission cost
-      Just Kakuro a rejection.
-- [ ] Recommended first: install the Release build on a real device and
-      play one board (family practice before every submit).
-- [x] ~~Host the web pages~~ Done 2026-08-15: served by GitHub Pages from
-      the `gh-pages` branch of `github.com/kkai/justshikaku` — the repo
-      name IS the URL path under kaikunze.de (the user site
-      `kkai/kkai.github.com` owns the domain). Both URLs return 200 via
-      GitHub; support/marketing/privacy URLs are wired into the listing
-      and verified by read-back. To update the pages, push to `gh-pages`.
+Everything the API can reach is done and verified (§3). Three things remain,
+and two of them are UI-only by Apple's design:
+
+- [ ] **App Privacy → "Data Not Collected".** No public API exists for it
+      (re-verified 2026-08-15). It is the only answer consistent with
+      `PrivacyInfo.xcprivacy` (UserDefaults / CA92.1) and the published
+      policy.
+- [ ] **Add "Shikaku Full" to the 1.0 version's "In-App Purchases and
+      Subscriptions" section, then "Add for Review" and Submit.** The IAP
+      cannot be attached through the API: `reviewSubmissionItems` needs an
+      `inAppPurchaseVersions` id, and that id is exposed by no endpoint,
+      include, or filter (probed exhaustively; `GET` on a *known* id works,
+      so it exists but cannot be discovered). Apple confirms the requirement
+      from the other side too: `POST inAppPurchaseSubmissions` returns
+      `FIRST_NON_CONSUMABLE_MUST_BE_SUBMITTED_ON_VERSION`. See §2 for why
+      this step is not optional.
+- [ ] Optional, family practice: install the Release build on a device and
+      play a board. Zelos is paired with Developer Mode on, but its tunnel
+      would not connect on 2026-08-15 (phone locked or off the network):
+      `xcrun devicectl device install app --device CE8780AA-1FCE-52AF-B86D-976DE3BD57FE build/export/Shikaku.ipa`
+
+**An empty review submission `a85832e4-bf0a-4bc5-b08b-020d14bf15ce` exists.**
+It was built via API to prove the version passes review-readiness validation
+(the app-version item was accepted, then deleted); the API forbids deleting
+the submission itself. Adding items in the UI populates it. It was emptied on
+purpose: a submission holding only the app version is exactly the shape that
+cost Just Kakuro a rejection.
 
 ## 2. The thing that cost Just Kakuro a rejection
 
@@ -65,6 +77,12 @@ submission and submit it.
 | Price | Free, base territory USA; IAP $4.99 |
 | Review contact | Kai Kunze, kai.kunze@gmail.com, +4972544577, no demo account |
 | Export compliance | answered by `ITSAppUsesNonExemptEncryption = NO` in the build |
+| Content rights | `DOES_NOT_USE_THIRD_PARTY_CONTENT` |
+| Availability | all 175 territories, plus new territories automatically |
+| Release | `AFTER_APPROVAL` (matches Just Hashi) |
+| Demo account | `demoAccountRequired = false` — required before ASC will accept the version into a review submission |
+| Privacy policy | URL + full policy text + choices URL on the appInfo localization. ASC rejects the version from review without `privacyPolicyText` |
+| Field audit | 23 fields re-read after every write on 2026-08-15: zero failures |
 
 ## 4. Regenerating any of it
 
