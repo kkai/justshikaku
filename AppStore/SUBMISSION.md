@@ -30,10 +30,12 @@ build 1; the version sits in `PREPARE_FOR_SUBMISSION`. **The final steps are you
       Just Kakuro a rejection.
 - [ ] Recommended first: install the Release build on a real device and
       play one board (family practice before every submit).
-- [ ] Host the web pages: upload `AppStore/index.html` and
-      `AppStore/justshikaku-privacy.html` to
-      `https://kaikunze.de/justshikaku/` (path is case-sensitive on this
-      host). The listing's support/marketing/privacy URLs point there.
+- [x] ~~Host the web pages~~ Done 2026-08-15: served by GitHub Pages from
+      the `gh-pages` branch of `github.com/kkai/justshikaku` — the repo
+      name IS the URL path under kaikunze.de (the user site
+      `kkai/kkai.github.com` owns the domain). Both URLs return 200 via
+      GitHub; support/marketing/privacy URLs are wired into the listing
+      and verified by read-back. To update the pages, push to `gh-pages`.
 
 ## 2. The thing that cost Just Kakuro a rejection
 
@@ -52,7 +54,7 @@ submission and submit it.
 | | |
 |---|---|
 | Engine + app tests | full suite green, incl. ReleaseBuildTests (privacy-manifest key spelling, DEBUG-only screenshot unlock, bundle hygiene) |
-| Build | 1.0 (1), uploaded, `VALID` (id `289a3006-c305-468a-ad03-fc4fabafb723`), **attached to the 1.0 version** |
+| Build | 1.0 (2), uploaded, `VALID` (id `788a9519-af0c-4078-adce-0e0d73465ee1`), **attached to the 1.0 version**. Build 1 was superseded by the Lacquered Measure icon |
 | IPA inspection | no `.storekit`, no debug dylibs, `PrivacyInfo.xcprivacy` present, `ITSAppUsesNonExemptEncryption` false, `strings` clean of `ShikakuScreenshotUnlock` |
 | Screenshots | 10 in ASC, all `COMPLETE`, light set leads. **A set caps at 10** — 12 were captured; dark lesson + learn were dropped. AppShip exits 1 silently at #11, which is how the cap announces itself |
 | Metadata | `metadata/`: subtitle 25, promo 155, keywords 86, description ~2.2k chars, review notes |
@@ -69,7 +71,7 @@ submission and submit it.
 ```bash
 python3 AppStore/capture_screenshots.py     # drives the sim via the app's own save
 python3 AppStore/iap/generate.py            # IAP promo + review screenshot
-python3 Tools/AppIcon/make_icons.py         # app icon (check at 40pt)
+python3 Tools/AppIcon/make_icons.py         # app icon (Lacquered Measure; check at 40pt; PHILOSOPHY.md sits beside it)
 ```
 
 Metadata and screenshots go up through AppShip
@@ -101,7 +103,7 @@ this machine's keychain). Always validate before uploading. Inspect the .ipa
 per §3's checklist before either.
 
 `CURRENT_PROJECT_VERSION` must increase for every upload against the same
-`MARKETING_VERSION`. It is **1**.
+`MARKETING_VERSION`. It is **2**.
 
 ## 6. Traps inherited from the family (all pinned or scripted here)
 
