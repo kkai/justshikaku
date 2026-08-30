@@ -2,17 +2,10 @@
 //  HomeView.swift
 //  Shikaku
 //
-//  The title screen: the room itself, the curriculum, and one way in.
-//
-//  What this screen has to do in three seconds is show what the game looks
-//  like, show that it teaches, and get the player onto a board. The previous
-//  version did none of those — it was a configuration form (two chip rows, a
-//  play bar, a Learn card) on which the board never appeared, with roughly
-//  60% of the screen empty below it.
-//
-//  The structural move that unlocked the rest: size and difficulty left the
-//  front page for a sheet (NewRoomSheet), and the last-played choice is
-//  restored, so most sessions never see a picker at all.
+//  The start screen: wordmark with the drag-diagonal, the daily, Continue,
+//  one way into a new room, and the seal path. A column of real buttons —
+//  the previous version led with a large non-interactive board, which looked
+//  playable and wasn't; everything here does what it looks like it does.
 //
 
 import SwiftUI
@@ -28,170 +21,64 @@ struct HomeView: View {
     @State private var size: BoardSize = .five
     @State private var difficulty: Difficulty = .gentle
     @State private var showingNewRoom = false
-    /// The launch lay-in: how many of the room's mats are on the floor.
-    /// Grows one beat at a time in `layInRoom`; MatView's own settle
-    /// animation fires for each mat as it joins the prefix.
-    @State private var laidMats: Int?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
             Theme.floor.ignoresSafeArea()
-            VStack(spacing: 0) {
-                lintel
-                // One flexible gap, below the room rather than around it: the
-                // room hangs off the lintel and the controls sit on the floor,
-                // instead of a symmetric float with dead space top and bottom.
-                Spacer().frame(height: Layout.s6)
-                liveRoom
-                roomCaption
-                Spacer(minLength: Layout.s5)
-                VStack(spacing: Layout.s5) {
-                    Button { path.append(.learn) } label: {
-                        TechniquePath(mastery: mastery)
+            // The board's lattice dots as a whisper on the floor: Home stays
+            // in the game's world without pretending to be a board.
+            FloorDots()
+                .ignoresSafeArea()
+            ScrollView {
+                VStack(alignment: .leading, spacing: Layout.s5) {
+                    Wordmark()
+                    DailyCard(path: $path)
+                    if progress.savedGame != nil {
+                        continueCard
                     }
-                    .buttonStyle(.plain)
                     playButton
+                    sealPath
                 }
-                .padding(.horizontal, Layout.s5)
-                .padding(.bottom, Layout.s4)
+                .padding(Layout.s5)
+                .frame(maxWidth: 560)
+                .frame(maxWidth: .infinity)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .toolbar { toolbarItems }
         .sheet(isPresented: $showingNewRoom) {
             NewRoomSheet(size: $size, difficulty: $difficulty, onStart: start)
         }
         .onAppear(perform: restoreLastPlayed)
     }
 
-    // MARK: - The lintel
+    // MARK: - Continue
 
-    /// A band of timber across the head of the screen with the wordmark set
-    /// into it — the same wood the board is framed in, so the app reads as
-    /// one built object rather than a page with a title on it.
-    private var lintel: some View {
-        HStack(spacing: Layout.s3) {
-            ShikakuMark(side: 30)
-            // Expanded width + a cut shadow: carved into the timber, not
-            // typeset on it. Placeholder voice until the engraved glyph set
-            // exists (plan Part E) — but no longer a default largeTitle.
-            Text("Just Shikaku")
-                .font(.system(size: 28, weight: .bold))
-                .fontWidth(.expanded)
-                .foregroundStyle(Theme.ink)
-                .shadow(color: .black.opacity(0.55), radius: 0, y: 1)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Spacer(minLength: Layout.s3)
-            // Stats and Settings live in the lintel — same timber, not a
-            // navigation bar floating detached above it.
-            Button { path.append(.stats) } label: {
-                Image(systemName: "chart.bar")
-                    .frame(minWidth: 44, minHeight: 44)
-            }
-            .accessibilityLabel("Statistics")
-            Button { path.append(.settings) } label: {
-                Image(systemName: "gearshape")
-                    .frame(minWidth: 44, minHeight: 44)
-            }
-            .accessibilityLabel("Settings")
-        }
-        .foregroundStyle(Theme.inkSoft)
-        .padding(.horizontal, Layout.s5)
-        .padding(.vertical, Layout.s2)
-        .frame(maxWidth: .infinity)
-        .background(Theme.frame)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(.black.opacity(0.45)).frame(height: 1)
-        }
-    }
-
-    // MARK: - The live room
-
-    /// The board, on the front page, in the full material treatment.
-    ///
-    /// Every competitor's home screen is a menu. This one is the game: if a
-    /// save exists the miniature *is* that board and tapping it continues; on
-    /// a first run it shows a laid demo room and points at the rules instead.
-    private var liveRoom: some View {
+    private var continueCard: some View {
         Button {
             Haptics.previewTick()
-            if progress.savedGame != nil {
-                path.append(.resume)
-            } else {
-                path.append(.learn)
-            }
+            path.append(.resume)
         } label: {
-            RoomBoard(game: stagedRoomGame)
-                .allowsHitTesting(false)
-                .frame(maxWidth: 340)
+            HStack(spacing: Layout.s4) {
+                if let saved = progress.savedGame {
+                    BoardThumbnail(puzzle: saved.puzzle, board: saved.board)
+                        .frame(width: 56, height: 56)
+                }
+                VStack(alignment: .leading, spacing: Layout.s1) {
+                    Text("Continue")
+                        .font(.headline)
+                        .foregroundStyle(Theme.ink)
+                    Text(savedLabel)
+                        .font(Theme.numberFont(size: 13))
+                        .foregroundStyle(Theme.inkSoft)
+                }
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .foregroundStyle(Theme.inkSoft)
+            }
+            .padding(Layout.s4)
+            .homeCard()
         }
         .buttonStyle(.plain)
-        .task(id: fullRoomBoard.placed.count) { await layInRoom() }
-        .accessibilityLabel(progress.savedGame != nil
-                            ? "Continue your room, \(savedLabel)"
-                            : "Learn the rules")
-    }
-
-    private var roomCaption: some View {
-        // A verb, not a caption: the room is the way in, so the line under it
-        // says what tapping it does.
-        Group {
-            if progress.savedGame != nil {
-                Text("Continue — \(savedLabel)")
-                    .font(Theme.numberFont(size: 13))
-            } else {
-                Text("Tap the room to learn the rules")
-                    .font(.subheadline)
-            }
-        }
-        .foregroundStyle(Theme.inkSoft)
-        .padding(.top, Layout.s3)
-    }
-
-    /// The room's full contents: the saved board when there is one, otherwise
-    /// a laid demo room. Computed rather than `@State` so a save made on the
-    /// play screen is reflected the moment the player comes back.
-    private var fullRoom: (puzzle: Puzzle, size: BoardSize, difficulty: Difficulty, board: BoardState) {
-        if let saved = progress.savedGame {
-            return (saved.puzzle,
-                    BoardSize(rawValue: saved.sizeRaw) ?? .five,
-                    Difficulty(rawValue: saved.difficultyRaw) ?? .gentle,
-                    saved.board)
-        }
-        // A real lesson position: a 7×7 with mats already laid, so a first
-        // run still sees a room with something in it.
-        let demo = TutorialPuzzles.lesson(for: .corridorCount)
-        return (demo.puzzle, .seven, .gentle, demo.startingBoard)
-    }
-
-    private var fullRoomBoard: BoardState { fullRoom.board }
-
-    /// The room mid-lay-in: the first `laidMats` mats of the full board.
-    /// `PlacedRect` identity is stable across prefixes, so MatView keeps its
-    /// state for mats already down and animates only the newcomer.
-    private var stagedRoomGame: ShikakuGame {
-        let room = fullRoom
-        let placed = laidMats.map { Array(room.board.placed.prefix($0)) } ?? room.board.placed
-        return ShikakuGame(puzzle: room.puzzle, size: room.size, difficulty: room.difficulty,
-                           board: BoardState(placed: placed, claims: room.board.claims))
-    }
-
-    /// The launch moment: the room lays itself out, one mat per beat. Under
-    /// Reduce Motion (or a re-run with nothing new) the final state renders
-    /// directly — the animation is the greeting, never information.
-    private func layInRoom() async {
-        let total = fullRoomBoard.placed.count
-        guard !reduceMotion, total > 0, laidMats == nil else {
-            laidMats = total
-            return
-        }
-        laidMats = 0
-        for beat in 1...total {
-            try? await Task.sleep(for: .milliseconds(280))
-            guard !Task.isCancelled else { return }
-            laidMats = beat
-        }
     }
 
     private var savedLabel: String {
@@ -201,7 +88,7 @@ struct HomeView: View {
         return "\(size) · \(tier) · \(TimeFormatting.clock(saved.elapsedSeconds))"
     }
 
-    // MARK: - Getting in
+    // MARK: - New room
 
     private var playButton: some View {
         Button("Lay out a room") { showingNewRoom = true }
@@ -225,4 +112,104 @@ struct HomeView: View {
         cache.warm(size: choice.size, tier: choice.difficulty)
     }
 
+    // MARK: - The seal path
+
+    /// Each seal is a real button into its own lesson — the row is the
+    /// curriculum's front door, not a decoration. A gated technique routes to
+    /// the Learn menu instead, whose locked rows present the paywall (the
+    /// family rule: gates are tappable, never dead).
+    private var sealPath: some View {
+        TechniquePath(mastery: mastery) { technique in
+            if FeatureGate.isLessonAvailable(technique, unlocked: entitlements.isUnlocked) {
+                path.append(.lesson(technique))
+            } else {
+                path.append(.learn)
+            }
+        }
+        .padding(.top, Layout.s2)
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            HStack(spacing: Layout.s2) {
+                Button { path.append(.stats) } label: {
+                    Image(systemName: "chart.bar")
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                .accessibilityLabel("Statistics")
+                Button { path.append(.settings) } label: {
+                    Image(systemName: "gearshape")
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                .accessibilityLabel("Settings")
+            }
+            .foregroundStyle(Theme.inkSoft)
+        }
+    }
+}
+
+// MARK: - Shared home vocabulary
+
+extension View {
+    /// The home card: a step up from the floor, square, hairline-edged. The
+    /// same material logic as the mats and seals — Kakuro-like in
+    /// composition, never in corner radius.
+    func homeCard() -> some View {
+        background(Theme.surface)
+            .overlay(Rectangle().strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+}
+
+/// A small non-interactive render of a board — the Continue card's preview
+/// and the daily's done-state. Deliberately chrome-free: lattice and mats
+/// only, no clues at this size.
+struct BoardThumbnail: View {
+    let puzzle: Puzzle
+    let board: BoardState
+
+    var body: some View {
+        GeometryReader { proxy in
+            let geo = BoardGeometry(size: puzzle.size, container: proxy.size)
+            ZStack(alignment: .topLeading) {
+                ForEach(board.placed, id: \.self) { placed in
+                    let f: CGRect = geo.rect(for: placed.rect)
+                    Rectangle()
+                        .fill(Theme.mat)
+                        .overlay(Rectangle().strokeBorder(Theme.heri, lineWidth: 0.5))
+                        .frame(width: f.width, height: f.height)
+                        .position(x: f.midX, y: f.midY)
+                        .padding(0.5)
+                }
+            }
+            .background(Theme.floor)
+            .overlay(Rectangle().strokeBorder(Theme.hairline, lineWidth: 1))
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// The board's intersection dots, tiled across the floor at low contrast.
+private struct FloorDots: View {
+    var body: some View {
+        Canvas { context, size in
+            let pitch: CGFloat = 44
+            let r: CGFloat = 1.2
+            var y: CGFloat = pitch / 2
+            while y < size.height {
+                var x: CGFloat = pitch / 2
+                while x < size.width {
+                    context.fill(
+                        Path(ellipseIn: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r)),
+                        with: .color(.white.opacity(0.03)))
+                    x += pitch
+                }
+                y += pitch
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
 }

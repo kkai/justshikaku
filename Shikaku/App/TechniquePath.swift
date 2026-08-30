@@ -13,6 +13,8 @@ import SwiftUI
 struct TechniquePath: View {
     let mastery: MasteryTracker
     var seal: CGFloat = 34
+    /// Invoked with the tapped technique; nil renders the row inert (Stats).
+    var onTap: ((Technique) -> Void)? = nil
 
     private var learned: Int {
         Technique.allCases.filter { mastery.stage(for: $0) == .learned }.count
@@ -31,13 +33,21 @@ struct TechniquePath: View {
             }
             HStack(spacing: Layout.s2) {
                 ForEach(Technique.allCases) { technique in
-                    HankoSeal(stage: mastery.stage(for: technique),
-                              station: technique.rawValue + 1, side: seal)
+                    let seal = HankoSeal(stage: mastery.stage(for: technique),
+                                         station: technique.rawValue + 1, side: seal)
+                    if let onTap {
+                        Button { onTap(technique) } label: { seal }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(
+                                "\(TechniqueContent.name(for: technique)) lesson")
+                    } else {
+                        seal
+                    }
                 }
                 Spacer(minLength: 0)
             }
         }
-        .accessibilityElement()
+        .accessibilityElement(children: onTap == nil ? .ignore : .contain)
         .accessibilityLabel("Your path, \(learned) of \(Technique.allCases.count) techniques learned")
     }
 }

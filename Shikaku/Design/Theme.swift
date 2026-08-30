@@ -42,14 +42,14 @@ private nonisolated extension NSColor {
 /// Semantic color and type tokens. **The lacquered room**: Shikaku (四角)
 /// puzzles are literally tatami floor plans, so the board is a room being laid
 /// out — seen from directly above, the way the app icon sees it. A lacquered
-/// dark floor, a wood frame around the board, opaque igusa-green mats with a
-/// woven edge band, bone numerals, and shu vermilion reserved for teaching.
+/// dark floor, a raised dark band around the board, opaque igusa-green mats
+/// with a woven edge band, bone numerals, and shu vermilion for teaching.
 ///
 /// Three rules hold this together and are worth defending:
 ///
 /// 1. **Green is dominant, not an accent.** The mats are the largest coloured
 ///    area on every screen. Near-black with a single vermilion accent is a
-///    stock look; a material triad with wood doing structural work is not.
+///    stock look; green doing the dominant work is not.
 /// 2. **Vermilion means teaching**, never error. Eliminations and wrong mats
 ///    are *hatched* (`hatch`), because a carpenter rules something out by
 ///    drawing on it. This also retires the old constraint that the accent and
@@ -80,11 +80,11 @@ nonisolated enum Theme {
     /// wood under lacquer, not a grey.
     static let floor = dynamic(light: ThemeRGBA(red: 0.937, green: 0.914, blue: 0.855, alpha: 1),
                                dark: ThemeRGBA(red: 0.078, green: 0.063, blue: 0.047, alpha: 1))
-    /// The wood band the board is set into, and the ground for inlaid marks.
-    /// The mid-tone between `floor` and `mat` — it is what stops the palette
-    /// reading as black-plus-one-accent.
-    static let frame = dynamic(light: ThemeRGBA(red: 0.541, green: 0.420, blue: 0.271, alpha: 1),
-                               dark: ThemeRGBA(red: 0.227, green: 0.165, blue: 0.094, alpha: 1))
+    /// The raised band around the board and the fill of quiet controls — a
+    /// step up from `floor`, deliberately NOT timber. It reads as a darker
+    /// neutral, never as wood: Kai killed the brown on sight.
+    static let frame = dynamic(light: ThemeRGBA(red: 0.851, green: 0.831, blue: 0.780, alpha: 1),
+                               dark: ThemeRGBA(red: 0.157, green: 0.133, blue: 0.102, alpha: 1))
     /// Sheets and the few remaining raised panels. Being retired from the
     /// board and from inline panels — see Layout.
     static let surface = dynamic(light: .white,

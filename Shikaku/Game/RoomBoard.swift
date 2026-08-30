@@ -1,20 +1,20 @@
 import SwiftUI
 
-/// The board set into the room: a lacquered wood band around the lattice,
+/// The board set into the room: a raised dark band around the lattice,
 /// running out to the screen edges.
 ///
-/// The frame is not trim. It is what makes the board an *object in a room*
-/// rather than a grid on a page, and it is the first thing that separates
-/// this app from a category of flat, translucent, edge-to-edge-white boards.
-/// The app icon has always shown the room this way — seen from directly
-/// above, one lit field inside lacquered dark. This is that view, on screen.
+/// The band is not trim. It makes the board an *object in a room* rather
+/// than a grid on a page — and it doubles as the input's grace margin (see
+/// `touchOutset` below). It is deliberately a dark neutral, not timber: the
+/// wood look was tried and cut.
 ///
 /// Deliberately opaque throughout: no material, no blur, no translucency.
 struct RoomBoard: View {
     let game: ShikakuGame
 
-    /// Wide enough to read as timber at App Store thumbnail size. Thinner
-    /// than about 12 and it stops being a frame and starts being a border.
+    /// Wide enough to read as a frame at App Store thumbnail size, and to be
+    /// a useful grace margin for edge drags. Thinner than about 12 and it
+    /// stops being a frame and starts being a border.
     private let band: CGFloat = 14
 
     var body: some View {
@@ -29,11 +29,7 @@ struct RoomBoard: View {
             // the room reads as one flat brown square.
             .background(Theme.floor)
             .padding(band)
-            .background {
-                Rectangle()
-                    .fill(Theme.frame)
-                    .overlay(alignment: .top) { lacquerSheen }
-            }
+            .background(Theme.frame)
             // The board sits *in* the timber: a dark line at the inner edge of
             // the band reads as depth without costing a shadow pass.
             .overlay {
@@ -44,13 +40,4 @@ struct RoomBoard: View {
             .accessibilityElement(children: .contain)
     }
 
-    /// One highlight along the top edge of the band — light falling on a
-    /// lacquered surface from the top of the room. A full gradient over the
-    /// whole frame would read as plastic.
-    private var lacquerSheen: some View {
-        LinearGradient(colors: [.white.opacity(0.12), .clear],
-                       startPoint: .top, endPoint: .bottom)
-            .frame(height: band)
-            .allowsHitTesting(false)
-    }
 }

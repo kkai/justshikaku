@@ -53,11 +53,17 @@ struct GameView: View {
         .navigationBarBackButtonHidden(game.didWin)
         .task(id: game.didWin) {
             guard game.didWin else { return }
-            progress.clearSavedGame()
-            wasRecord = progress.recordSolve(
-                size: game.size, difficulty: game.difficulty,
-                seconds: game.elapsedSeconds, hintsUsed: game.hintsUsed)
-            cache.warm(size: game.size, tier: game.difficulty)
+            if let day = game.dailyDay {
+                // The daily records into the streak, not the best-time table,
+                // and never owned the save slot.
+                progress.recordDailyCompleted(day: day, seconds: game.elapsedSeconds)
+            } else {
+                progress.clearSavedGame()
+                wasRecord = progress.recordSolve(
+                    size: game.size, difficulty: game.difficulty,
+                    seconds: game.elapsedSeconds, hintsUsed: game.hintsUsed)
+                cache.warm(size: game.size, tier: game.difficulty)
+            }
         }
         .task {
             // One warm pass for "next puzzle" while the player thinks.
@@ -68,16 +74,16 @@ struct GameView: View {
             }
         }
         .onChange(of: game.board) {
-            guard !game.didWin else { return }
+            guard !game.didWin, game.dailyDay == nil else { return }
             progress.save(game.snapshot)
         }
         .onChange(of: scenePhase) {
-            if scenePhase != .active && !game.didWin {
+            if scenePhase != .active && !game.didWin && game.dailyDay == nil {
                 progress.save(game.snapshot)
             }
         }
         .onDisappear {
-            if !game.didWin {
+            if !game.didWin && game.dailyDay == nil {
                 progress.save(game.snapshot)
             }
         }
@@ -85,7 +91,9 @@ struct GameView: View {
 
     private var header: some View {
         HStack {
-            Text("\(game.size.label) · \(game.difficulty.label)")
+            Text(game.dailyDay != nil
+                 ? "Today's room · \(game.size.label)"
+                 : "\(game.size.label) · \(game.difficulty.label)")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(Theme.inkSoft)
             Spacer()

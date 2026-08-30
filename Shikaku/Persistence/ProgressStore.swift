@@ -51,6 +51,7 @@ final class ProgressStore {
         static let bestTimes = "shikaku.bestTimes.v1"
         static let mastery = "shikaku.mastery.v1"
         static let lastPlayed = "shikaku.lastPlayed.v1"
+        static let daily = "shikaku.daily.v1"
     }
 
     /// The size/difficulty the player last started a game with, so the pickers
@@ -58,6 +59,16 @@ final class ProgressStore {
     struct GameChoice: Codable, Hashable {
         let size: BoardSize
         let difficulty: Difficulty
+    }
+
+    /// The daily-room record. `completedTimes` is keyed by `DayKey.isoString`
+    /// so the JSON stays readable and time-zone-free. Ported from Hashi,
+    /// including the monotonic guard on `lastCompleted`.
+    struct DailyRecord: Codable, Equatable {
+        var lastCompleted: DayKey?
+        var currentStreak = 0
+        var bestStreak = 0
+        var completedTimes: [String: Int] = [:]
     }
 
     struct Settings: Codable, Equatable {
@@ -99,6 +110,7 @@ final class ProgressStore {
     private(set) var savedGame: GameSnapshot?
     private(set) var lastPlayed: GameChoice?
     private(set) var mastery = MasteryState()
+    private(set) var daily = DailyRecord()
     var settings = Settings() {
         didSet { save(settings, key: Key.settings) }
     }
@@ -111,6 +123,44 @@ final class ProgressStore {
         savedGame = load(GameSnapshot.self, key: Key.saveGame)
         lastPlayed = load(GameChoice.self, key: Key.lastPlayed)
         mastery = load(MasteryState.self, key: Key.mastery) ?? MasteryState()
+        daily = load(DailyRecord.self, key: Key.daily) ?? DailyRecord()
+    }
+
+    // MARK: - Daily streak
+
+    func hasCompletedDaily(_ day: DayKey) -> Bool {
+        daily.completedTimes[day.isoString] != nil
+    }
+
+    func dailyTime(_ day: DayKey) -> Int? {
+        daily.completedTimes[day.isoString]
+    }
+
+    /// The streak to *show*: 0 when the chain is already broken (yesterday
+    /// missed), even before today is played. Computed, never stored —
+    /// storage would go stale at midnight.
+    func displayStreak(today: DayKey) -> Int {
+        guard let last = daily.lastCompleted else { return 0 }
+        if last == today || last == today.previous() { return daily.currentStreak }
+        return 0
+    }
+
+    /// Records a completed daily. Idempotent per day; increments on
+    /// consecutive days, resets to 1 otherwise. `lastCompleted` only moves
+    /// forward — replaying an older day must not rewind the chain.
+    func recordDailyCompleted(day: DayKey, seconds: Int) {
+        guard !hasCompletedDaily(day) else { return }
+        daily.completedTimes[day.isoString] = seconds
+        if daily.lastCompleted == day.previous() {
+            daily.currentStreak += 1
+        } else {
+            daily.currentStreak = 1
+        }
+        if daily.lastCompleted == nil || daily.lastCompleted! < day {
+            daily.lastCompleted = day
+        }
+        daily.bestStreak = max(daily.bestStreak, daily.currentStreak)
+        save(daily, key: Key.daily)
     }
 
     /// Records the *requested* size/difficulty for a new game.

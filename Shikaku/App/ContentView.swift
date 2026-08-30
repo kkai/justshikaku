@@ -38,6 +38,10 @@ struct ContentView: View {
             ResumeGameView()
         case .learn:
             LearnMenuView()
+        case .lesson(let technique):
+            LessonView(technique: technique)
+        case .daily(let day):
+            DailyHostView(day: day)
         case .stats:
             StatsView()
         case .settings:

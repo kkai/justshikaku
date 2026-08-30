@@ -13,6 +13,10 @@ nonisolated enum Route: Hashable {
     case play(size: BoardSize, difficulty: Difficulty)
     case resume
     case learn
+    /// Straight into one technique's lesson — the seal path's fast door.
+    case lesson(Technique)
+    /// Today's room.
+    case daily(DayKey)
     case stats
     case settings
 }

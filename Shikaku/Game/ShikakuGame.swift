@@ -17,6 +17,9 @@ final class ShikakuGame {
     let puzzle: Puzzle
     let size: BoardSize
     let difficulty: Difficulty
+    /// Set when this game is the daily room. A daily never touches the
+    /// single save slot and records into the streak instead of best times.
+    let dailyDay: DayKey?
 
     private(set) var board = BoardState()
     private(set) var elapsedSeconds: Int
@@ -29,13 +32,15 @@ final class ShikakuGame {
     private(set) var creditedClues: Set<Int> = []
 
     init(puzzle: Puzzle, size: BoardSize, difficulty: Difficulty,
-         board: BoardState = BoardState(), elapsedSeconds: Int = 0, hintsUsed: Int = 0) {
+         board: BoardState = BoardState(), elapsedSeconds: Int = 0, hintsUsed: Int = 0,
+         dailyDay: DayKey? = nil) {
         self.puzzle = puzzle
         self.size = size
         self.difficulty = difficulty
         self.board = board
         self.elapsedSeconds = elapsedSeconds
         self.hintsUsed = hintsUsed
+        self.dailyDay = dailyDay
     }
 
     // MARK: - Drag state
