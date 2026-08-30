@@ -21,6 +21,8 @@ struct HomeView: View {
     @State private var size: BoardSize = .five
     @State private var difficulty: Difficulty = .gentle
     @State private var showingNewRoom = false
+    /// The seal the player tapped; drives the three-door dialog.
+    @State private var sealChoice: Technique?
 
     var body: some View {
         ZStack {
@@ -32,12 +34,18 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.s5) {
                     Wordmark()
+                    // The path rides directly under the wordmark: the
+                    // curriculum is the pitch, and its progress must be the
+                    // first thing that visibly moves.
+                    sealPath
+                    HintTrendLine(series: progress.hintTrend)
+                        .padding(.top, -Layout.s3)
                     DailyCard(path: $path)
+                    ProofCard(path: $path)
                     if progress.savedGame != nil {
                         continueCard
                     }
                     playButton
-                    sealPath
                 }
                 .padding(Layout.s5)
                 .frame(maxWidth: 560)
@@ -114,19 +122,36 @@ struct HomeView: View {
 
     // MARK: - The seal path
 
-    /// Each seal is a real button into its own lesson — the row is the
-    /// curriculum's front door, not a decoration. A gated technique routes to
+    /// Each seal opens three doors — the lesson, the timed drill, and a
+    /// fresh room generated to need that technique. The row is the app's
+    /// second game launcher, not a decoration. A gated technique routes to
     /// the Learn menu instead, whose locked rows present the paywall (the
     /// family rule: gates are tappable, never dead).
     private var sealPath: some View {
         TechniquePath(mastery: mastery) { technique in
             if FeatureGate.isLessonAvailable(technique, unlocked: entitlements.isUnlocked) {
-                path.append(.lesson(technique))
+                sealChoice = technique
             } else {
                 path.append(.learn)
             }
         }
-        .padding(.top, Layout.s2)
+        .confirmationDialog(
+            sealChoice.map { TechniqueContent.name(for: $0) } ?? "",
+            isPresented: Binding(get: { sealChoice != nil },
+                                 set: { if !$0 { sealChoice = nil } }),
+            titleVisibility: .visible
+        ) {
+            if let technique = sealChoice {
+                Button("The lesson") { path.append(.lesson(technique)) }
+                if mastery.stage(for: technique) > .unseen {
+                    Button("A timed drill") { path.append(.drill(technique)) }
+                }
+                Button("A room that needs it") {
+                    path.append(.techniqueRoom(technique,
+                                               seed: UInt64.random(in: .min ... .max)))
+                }
+            }
+        }
     }
 
     @ToolbarContentBuilder
@@ -211,5 +236,56 @@ private struct FloorDots: View {
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+/// The number that proves the app works, on the front page: hints per room,
+/// then vs now, with a whisper of a sparkline. Appears only once there are
+/// enough solves for the comparison to mean anything — below that it would
+/// be noise dressed as insight.
+struct HintTrendLine: View {
+    let series: [Int]
+
+    var body: some View {
+        if series.count >= 4 {
+            let half = series.count / 2
+            let early = average(series.prefix(half))
+            let late = average(series.suffix(series.count - half))
+            HStack(spacing: Layout.s3) {
+                Text("Hints per room")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.inkSoft)
+                Text("\(formatted(early)) → \(formatted(late))")
+                    .font(Theme.numberFont(size: 13))
+                    .foregroundStyle(late <= early ? Theme.heri : Theme.inkSoft)
+                spark
+                Spacer(minLength: 0)
+            }
+            .accessibilityElement()
+            .accessibilityLabel(
+                "Hints per room, from \(formatted(early)) down to \(formatted(late))")
+        }
+    }
+
+    /// Tiny bars, floor-material, no chart machinery.
+    private var spark: some View {
+        let peak = max(series.max() ?? 1, 1)
+        return HStack(alignment: .bottom, spacing: 2) {
+            ForEach(Array(series.suffix(10).enumerated()), id: \.offset) { _, value in
+                Rectangle()
+                    .fill(Theme.heri.opacity(0.7))
+                    .frame(width: 3,
+                           height: max(2, 12 * CGFloat(value) / CGFloat(peak)))
+            }
+        }
+        .frame(height: 12, alignment: .bottom)
+    }
+
+    private func average(_ slice: some Collection<Int>) -> Double {
+        slice.isEmpty ? 0 : Double(slice.reduce(0, +)) / Double(slice.count)
+    }
+
+    private func formatted(_ value: Double) -> String {
+        String(format: "%.1f", value)
     }
 }

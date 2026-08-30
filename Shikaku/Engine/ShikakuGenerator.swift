@@ -35,6 +35,32 @@ nonisolated enum ShikakuGenerator {
     /// uniqueness proofs, and solver runs. Deterministic by construction.
     static let nodeBudget = 400_000
 
+    /// A board guaranteed to exercise `technique` — its trace contains at
+    /// least one step of it. The daily's salted-retry made general: round 0
+    /// is the unsalted seed (a seed that succeeds first try keeps its board
+    /// forever), later rounds salt deterministically, and the last valid
+    /// board ships with `matched: false` if no round produces the technique.
+    static func generate(featuring technique: Technique,
+                         size: BoardSize, tier: Difficulty, seed: UInt64,
+                         rounds: Int = 10,
+                         isCancelled: () -> Bool = { false })
+    -> (result: GenerationResult, matched: Bool) {
+        var fallback: GenerationResult? = nil
+        for round in 0..<max(rounds, 1) {
+            if isCancelled() { break }
+            let salted = seed &+ UInt64(round) &* 0x9E37_79B9_7F4A_7C15
+            let result = generate(size: size, tier: tier, seed: salted,
+                                  isCancelled: isCancelled)
+            if result.trace.contains(where: { $0.technique == technique }) {
+                return (result, true)
+            }
+            if fallback == nil { fallback = result }
+        }
+        let last = fallback ?? generate(size: size, tier: tier, seed: seed,
+                                        isCancelled: { false })
+        return (last, false)
+    }
+
     /// Requested-tier generation: grades candidates and returns one in the
     /// requested band, falling back to the nearest grade rather than refusing
     /// — and to a baked board when the budget is exhausted. Wire the returned

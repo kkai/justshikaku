@@ -53,6 +53,10 @@ struct GameView: View {
         .navigationBarBackButtonHidden(game.didWin)
         .task(id: game.didWin) {
             guard game.didWin else { return }
+            progress.recordLastSolve(ProgressStore.LastSolve(
+                puzzle: game.puzzle, moves: game.history,
+                sizeRaw: game.size.rawValue, difficultyRaw: game.difficulty.rawValue,
+                seconds: game.elapsedSeconds))
             if let day = game.dailyDay {
                 // The daily records into the streak, not the best-time table,
                 // and never owned the save slot.
@@ -91,9 +95,7 @@ struct GameView: View {
 
     private var header: some View {
         HStack {
-            Text(game.dailyDay != nil
-                 ? "Today's room · \(game.size.label)"
-                 : "\(game.size.label) · \(game.difficulty.label)")
+            Text(headerLabel)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(Theme.inkSoft)
             Spacer()
@@ -104,6 +106,14 @@ struct GameView: View {
                 .accessibilityLabel("Elapsed \(TimeFormatting.spoken(game.elapsedSeconds))")
         }
         .padding(.horizontal, Layout.s4)
+    }
+
+    private var headerLabel: String {
+        if game.dailyDay != nil { return "Today's room · \(game.size.label)" }
+        if let technique = game.featuring {
+            return "Needs \(TechniqueContent.name(for: technique)) · \(game.size.label)"
+        }
+        return "\(game.size.label) · \(game.difficulty.label)"
     }
 
     private var footer: some View {

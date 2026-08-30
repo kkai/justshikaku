@@ -20,6 +20,19 @@ struct TechniquePath: View {
         Technique.allCases.filter { mastery.stage(for: $0) == .learned }.count
     }
 
+    private var begun: Int {
+        Technique.allCases.filter { mastery.stage(for: $0) > .unseen }.count
+    }
+
+    /// The counter must move the first time anything happens — "0 of 7
+    /// learned" after finishing a lesson read as a bug, because .learned is
+    /// deliberately five unaided uses away.
+    private var counter: String {
+        if learned > 0 { return "\(learned) of \(Technique.allCases.count) learned" }
+        if begun > 0 { return "\(begun) of \(Technique.allCases.count) begun" }
+        return "\(Technique.allCases.count) techniques"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Layout.s2) {
             HStack {
@@ -27,7 +40,7 @@ struct TechniquePath: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Theme.inkSoft)
                 Spacer()
-                Text("\(learned) of \(Technique.allCases.count) learned")
+                Text(counter)
                     .font(Theme.numberFont(size: 13))
                     .foregroundStyle(Theme.inkSoft)
             }
@@ -62,7 +75,7 @@ nonisolated struct HankoSeal: View {
     var body: some View {
         Rectangle()
             .fill(fill)
-            .overlay(Rectangle().strokeBorder(border, lineWidth: stage == .unseen ? 1 : 1.5))
+            .overlay(Rectangle().strokeBorder(border, lineWidth: borderWidth))
             .overlay { if stage == .learned { glyph } else if station > 0 { stationNumber } }
             .frame(width: side, height: side)
     }
@@ -71,6 +84,7 @@ nonisolated struct HankoSeal: View {
         Text("\(station)")
             .font(Theme.numberFont(size: side * 0.38))
             .foregroundStyle(stage == .unseen ? Theme.inkSoft.opacity(0.5) : Theme.ink)
+            .fontWeight(stage == .unseen ? .regular : .bold)
     }
 
     /// A cut seal carries a mark; an uncut stone is blank. The mark is the
@@ -82,9 +96,12 @@ nonisolated struct HankoSeal: View {
             .offset(x: -side * 0.16)
     }
 
-    /// An uncut stone is still a stone: `.clear` on a hairline border made
-    /// the whole path invisible on a first run, which read as a rendering
-    /// fault rather than as seven things left to earn.
+    /// Every stage must be tellable at arm's length on the dark floor — mat
+    /// green on raised dark was nearly invisible at 34pt, which made a
+    /// freshly finished lesson look like nothing happened.
+    ///
+    /// unseen: dark stone, faint number · seen: SCORED — heri border, bright
+    /// number · practicing: cut — mat fill, heri border · learned: inked shu.
     private var fill: Color {
         switch stage {
         case .unseen: Theme.frame
@@ -97,9 +114,18 @@ nonisolated struct HankoSeal: View {
     private var border: Color {
         switch stage {
         case .unseen: Theme.hairline
-        case .seen: Theme.inkSoft
+        case .seen: Theme.heri
         case .practicing: Theme.heri
         case .learned: Theme.shu
+        }
+    }
+
+    private var borderWidth: CGFloat {
+        switch stage {
+        case .unseen: 1
+        case .seen: 2
+        case .practicing: 1.5
+        case .learned: 1.5
         }
     }
 }

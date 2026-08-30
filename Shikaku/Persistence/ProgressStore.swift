@@ -52,6 +52,8 @@ final class ProgressStore {
         static let mastery = "shikaku.mastery.v1"
         static let lastPlayed = "shikaku.lastPlayed.v1"
         static let daily = "shikaku.daily.v1"
+        static let hintTrend = "shikaku.hintTrend.v1"
+        static let lastSolve = "shikaku.lastSolve.v1"
     }
 
     /// The size/difficulty the player last started a game with, so the pickers
@@ -59,6 +61,16 @@ final class ProgressStore {
     struct GameChoice: Codable, Hashable {
         let size: BoardSize
         let difficulty: Difficulty
+    }
+
+    /// The player's most recent finished room, with every mat's commit
+    /// order and provenance — the raw material of "the proof" replay.
+    struct LastSolve: Codable, Equatable {
+        var puzzle: Puzzle
+        var moves: [ShikakuGame.SolveMove]
+        var sizeRaw: Int
+        var difficultyRaw: Int
+        var seconds: Int
     }
 
     /// The daily-room record. `completedTimes` is keyed by `DayKey.isoString`
@@ -111,6 +123,11 @@ final class ProgressStore {
     private(set) var lastPlayed: GameChoice?
     private(set) var mastery = MasteryState()
     private(set) var daily = DailyRecord()
+    /// Hints taken per solved room, most recent last, capped — the series
+    /// behind Home's trend line. The one number that proves the app works:
+    /// it should fall as the techniques land.
+    private(set) var hintTrend: [Int] = []
+    private(set) var lastSolve: LastSolve?
     var settings = Settings() {
         didSet { save(settings, key: Key.settings) }
     }
@@ -124,6 +141,13 @@ final class ProgressStore {
         lastPlayed = load(GameChoice.self, key: Key.lastPlayed)
         mastery = load(MasteryState.self, key: Key.mastery) ?? MasteryState()
         daily = load(DailyRecord.self, key: Key.daily) ?? DailyRecord()
+        hintTrend = load([Int].self, key: Key.hintTrend) ?? []
+        lastSolve = load(LastSolve.self, key: Key.lastSolve)
+    }
+
+    func recordLastSolve(_ solve: LastSolve) {
+        lastSolve = solve
+        save(solve, key: Key.lastSolve)
     }
 
     // MARK: - Daily streak
@@ -191,6 +215,10 @@ final class ProgressStore {
         stats.solvesBySizeAndDifficulty[key, default: 0] += 1
         stats.hintsByDifficulty[difficulty.rawValue, default: 0] += hintsUsed
         save(stats, key: Key.stats)
+
+        hintTrend.append(hintsUsed)
+        if hintTrend.count > 20 { hintTrend.removeFirst(hintTrend.count - 20) }
+        save(hintTrend, key: Key.hintTrend)
 
         let isRecord = bestTimes[key].map { seconds < $0 } ?? true
         if isRecord {

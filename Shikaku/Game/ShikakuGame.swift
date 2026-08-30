@@ -20,11 +20,25 @@ final class ShikakuGame {
     /// Set when this game is the daily room. A daily never touches the
     /// single save slot and records into the streak instead of best times.
     let dailyDay: DayKey?
+    /// Set when this room was generated to exercise one technique ("a room
+    /// that needs it"). Header copy only; play is a normal game.
+    let featuring: Technique?
 
     private(set) var board = BoardState()
     private(set) var elapsedSeconds: Int
     private(set) var hintsUsed: Int
     var isTimerRunning = true
+
+    /// One committed mat, in commit order, with its provenance — the raw
+    /// material of the post-win replay ("the proof"). Redraw-over removes
+    /// the displaced clues' earlier moves; undo pops the last.
+    nonisolated struct SolveMove: Codable, Sendable, Equatable {
+        let clueIndex: Int
+        let rect: GridRect
+        let hinted: Bool
+    }
+
+    private(set) var history: [SolveMove] = []
 
     /// Clues credited toward mastery. Survives undo deliberately —
     /// place/undo/place is indistinguishable from a fresh deduction, so
@@ -33,7 +47,7 @@ final class ShikakuGame {
 
     init(puzzle: Puzzle, size: BoardSize, difficulty: Difficulty,
          board: BoardState = BoardState(), elapsedSeconds: Int = 0, hintsUsed: Int = 0,
-         dailyDay: DayKey? = nil) {
+         dailyDay: DayKey? = nil, featuring: Technique? = nil) {
         self.puzzle = puzzle
         self.size = size
         self.difficulty = difficulty
@@ -41,6 +55,7 @@ final class ShikakuGame {
         self.elapsedSeconds = elapsedSeconds
         self.hintsUsed = hintsUsed
         self.dailyDay = dailyDay
+        self.featuring = featuring
     }
 
     // MARK: - Drag state
@@ -181,6 +196,12 @@ final class ShikakuGame {
         board.placed.append(placed)
         // A mat supersedes any claim marks under it.
         board.claims = board.claims.filter { !placed.rect.contains($0.key) }
+        // History mirrors the board: displaced mats leave it, the newcomer
+        // joins with its provenance.
+        let displacedClues = Set(displaced.map(\.clueIndex))
+        history.removeAll { displacedClues.contains($0.clueIndex) }
+        history.append(SolveMove(clueIndex: placed.clueIndex, rect: placed.rect,
+                                 hinted: applyingHint))
         undoStack.append(.commit(added: placed, removed: displaced))
         activeHint = nil
         Haptics.matSettle()
@@ -205,6 +226,7 @@ final class ShikakuGame {
 
     private func remove(_ placed: PlacedRect) {
         board.placed.removeAll { $0 == placed }
+        history.removeAll { $0.clueIndex == placed.clueIndex }
         undoStack.append(.remove(placed))
         Haptics.matRemove()
     }
@@ -236,8 +258,14 @@ final class ShikakuGame {
         case .commit(let added, let removed):
             board.placed.removeAll { $0 == added }
             board.placed.append(contentsOf: removed)
+            history.removeAll { $0.clueIndex == added.clueIndex && $0.rect == added.rect }
         case .remove(let placed):
             board.placed.append(placed)
+            // A removal undone restores the mat but its provenance is gone;
+            // re-enter it as unhinted only if it was never hinted — history
+            // has no record left, so err on not granting a "deduced" badge:
+            history.append(SolveMove(clueIndex: placed.clueIndex,
+                                     rect: placed.rect, hinted: true))
         case .claim(let cell, _):
             board.claims.removeValue(forKey: cell)
         }

@@ -96,7 +96,7 @@ struct LessonView: View {
                 .buttonStyle(QuietButtonStyle())
         case .done:
             Button("Done") {
-                mastery.recordDrill(technique: technique)
+                mastery.recordLesson(technique: technique)
                 dismiss()
             }
             .buttonStyle(PrimaryButtonStyle())

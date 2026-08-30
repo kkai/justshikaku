@@ -107,24 +107,10 @@ nonisolated enum DailySeed {
     /// rather than naming a technique the board does not contain.
     static func generate(for day: DayKey, isCancelled: () -> Bool = { false }) -> DailyResult {
         let plan = spec(for: day)
-        let base = seed(for: day)
-        var fallback: Puzzle? = nil
-        for round in 0..<10 {
-            if isCancelled() { break }
-            let salted = base &+ UInt64(round) &* 0x9E37_79B9_7F4A_7C15
-            let result = ShikakuGenerator.generate(
-                size: plan.size, tier: plan.difficulty, seed: salted,
-                isCancelled: isCancelled)
-            if result.trace.contains(where: { $0.technique == plan.technique }) {
-                return DailyResult(puzzle: result.puzzle, technique: plan.technique,
-                                   techniqueMatched: true)
-            }
-            if fallback == nil { fallback = result.puzzle }
-        }
-        // Deterministic last resort; same for everyone on that date.
-        let puzzle = fallback ?? ShikakuGenerator.generate(
-            size: plan.size, tier: plan.difficulty, seed: base,
-            isCancelled: { false }).puzzle
-        return DailyResult(puzzle: puzzle, technique: plan.technique, techniqueMatched: false)
+        let outcome = ShikakuGenerator.generate(
+            featuring: plan.technique, size: plan.size, tier: plan.difficulty,
+            seed: seed(for: day), isCancelled: isCancelled)
+        return DailyResult(puzzle: outcome.result.puzzle, technique: plan.technique,
+                           techniqueMatched: outcome.matched)
     }
 }

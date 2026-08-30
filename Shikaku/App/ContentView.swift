@@ -42,6 +42,12 @@ struct ContentView: View {
             LessonView(technique: technique)
         case .daily(let day):
             DailyHostView(day: day)
+        case .techniqueRoom(let technique, let seed):
+            TechniqueRoomHostView(technique: technique, seed: seed)
+        case .drill(let technique):
+            DrillView(technique: technique)
+        case .proof:
+            ReplayView()
         case .stats:
             StatsView()
         case .settings:

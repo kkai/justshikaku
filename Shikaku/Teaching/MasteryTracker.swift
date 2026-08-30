@@ -43,6 +43,16 @@ final class MasteryTracker {
         }
     }
 
+    /// A finished lesson marks the technique met. It advances the seal to
+    /// `.seen` — a lesson is an introduction, not practice, so it must not
+    /// touch the drill count (it did once, which both inflated drill stats
+    /// and made a finished lesson look like nothing on the path).
+    func recordLesson(technique: Technique) {
+        store.updateMastery { state in
+            state.perTechnique[technique.rawValue, default: TechniqueMastery()].seen += 1
+        }
+    }
+
     func recordDrill(technique: Technique) {
         store.updateMastery { state in
             state.perTechnique[technique.rawValue, default: TechniqueMastery()].drilled += 1

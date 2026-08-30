@@ -121,3 +121,50 @@ import Testing
         #expect(before <= 5 * TutorialPuzzles.lesson(for: .primeStrip).puzzle.clues.count)
     }
 }
+
+@Suite @MainActor struct ProofAndPathTests {
+
+    /// A lesson advances the seal to .seen and leaves drill stats alone —
+    /// the regression Kai saw as "the path doesn't show correctly".
+    @Test func aFinishedLessonMarksSeenWithoutTouchingDrills() {
+        let defaults = UserDefaults(suiteName: "proof-tests-\(UUID().uuidString)")!
+        let store = ProgressStore(userDefaults: defaults)
+        let tracker = MasteryTracker(store: store)
+        tracker.recordLesson(technique: .oneCell)
+        #expect(tracker.stage(for: .oneCell) == .seen)
+        #expect(store.mastery.perTechnique[Technique.oneCell.rawValue]?.drilled == 0)
+    }
+
+    /// The grader: a hint-laid move is "shown", an unaided derivable move is
+    /// "deduced", judged against the position it was played in.
+    @Test func graderSeparatesShownFromDeduced() {
+        let lesson = TutorialPuzzles.lesson(for: .primeStrip)
+        let game = ShikakuGame(puzzle: lesson.puzzle, size: .five,
+                               difficulty: .gentle, board: lesson.startingBoard)
+        let solution = lesson.puzzle.solution
+        // First clue by hint, the rest by hand.
+        game.applyHintPlacement(Placement(clueIndex: 0, rect: solution[0]))
+        for index in 1..<solution.count {
+            let rect = solution[index]
+            game.dragChanged(anchor: Cell(row: rect.minRow, col: rect.minCol),
+                             current: Cell(row: rect.maxRow, col: rect.maxCol))
+            game.dragEnded()
+        }
+        #expect(game.didWin)
+        let graded = SolveGrader.grade(puzzle: lesson.puzzle, moves: game.history)
+        #expect(graded.count == solution.count)
+        #expect(graded.first?.verdict == .shown)
+        let counts = SolveGrader.counts(graded)
+        #expect(counts.shown == 1)
+        #expect(counts.deduced + counts.leaps == solution.count - 1)
+        #expect(counts.deduced >= 1)
+    }
+
+    /// generate(featuring:) really puts the technique in the trace.
+    @Test func featuringGeneratorDeliversTheTechnique() {
+        let outcome = ShikakuGenerator.generate(
+            featuring: .onlyFit, size: .five, tier: .steady, seed: 424242)
+        #expect(outcome.matched)
+        #expect(outcome.result.trace.contains { $0.technique == .onlyFit })
+    }
+}

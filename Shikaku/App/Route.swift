@@ -17,6 +17,13 @@ nonisolated enum Route: Hashable {
     case lesson(Technique)
     /// Today's room.
     case daily(DayKey)
+    /// A fresh room generated so one technique appears in its solve —
+    /// the seal path's third door. The seed rolls at tap time.
+    case techniqueRoom(Technique, seed: UInt64)
+    /// One technique's timed drill, straight from its seal.
+    case drill(Technique)
+    /// The last solve, replayed and graded.
+    case proof
     case stats
     case settings
 }
