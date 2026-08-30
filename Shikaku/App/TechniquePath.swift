@@ -47,8 +47,7 @@ struct TechniquePath: View {
                 Spacer(minLength: 0)
             }
         }
-        .accessibilityElement(children: onTap == nil ? .ignore : .contain)
-        .accessibilityLabel("Your path, \(learned) of \(Technique.allCases.count) techniques learned")
+        .modifier(PathAccessibility(inert: onTap == nil, learned: learned))
     }
 }
 
@@ -101,6 +100,26 @@ nonisolated struct HankoSeal: View {
         case .seen: Theme.inkSoft
         case .practicing: Theme.heri
         case .learned: Theme.shu
+        }
+    }
+}
+
+
+/// Combined into one element only when the row is inert (Stats). As a
+/// launcher it must stay a container — a combining element swallowed the
+/// seal buttons for VoiceOver and every UI driver.
+private struct PathAccessibility: ViewModifier {
+    let inert: Bool
+    let learned: Int
+
+    func body(content: Content) -> some View {
+        if inert {
+            content
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
+                    "Your path, \(learned) of \(Technique.allCases.count) techniques learned")
+        } else {
+            content
         }
     }
 }
