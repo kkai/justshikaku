@@ -3,79 +3,78 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Just Shikaku ,  learn to lay the mats</title>
-<meta name="description" content="Just Shikaku teaches you to play Shikaku properly. Seven named techniques, hints that explain the argument, and every puzzle solvable by reasoning alone.">
+<title>Just Shikaku</title>
+<meta name="description" content="The Shikaku that teaches. Seven named techniques, hints that draw the argument on your board, a daily room built around one of them, and proof behind every puzzle.">
 <style>
-  /* The app's own palette, from Theme.swift: a tatami room. Straw-paper
-     floor, igusa mats with a woven heri edge, sumi ink. No web fonts: the
-     system faces are what the app uses, and a privacy-minded page that
-     phones a font CDN would be saying one thing and doing another. */
+  /* The app's own palette, from Theme.swift: the lacquered room, seen from
+     above. One committed look, dark only, exactly like the app. No web
+     fonts: the system faces are what the app uses, and a privacy-minded
+     page that phones a font CDN would be saying one thing and doing
+     another. */
   :root {
-    --straw: #efe9da; --surface: #ffffff; --ink: #26231c;
-    --ink-soft: rgba(38,35,28,.66); --heri: #3e4a35; --mat: #c8d1b7;
-    --mat-wash: rgba(138,155,110,.22); --kaki: #c4572e;
-    --hairline: rgba(38,35,28,.14);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --straw: #17140f; --surface: #221e17; --ink: #ece8dc;
-            --ink-soft: rgba(236,232,220,.66); --heri: #93a583; --mat: #3c4a35;
-            --mat-wash: rgba(147,165,131,.22); --kaki: #d97b52;
-            --hairline: rgba(236,232,220,.14); }
+    --floor: #14100c; --panel: #1e1912; --frame: #282218;
+    --ink: #f2eada; --ink-soft: rgba(242,234,218,.72);
+    --heri: #93a583; --mat: #3e5540; --shu: #d14027;
+    --hairline: rgba(242,234,218,.14);
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--straw); color: var(--ink);
+  body { margin: 0; background: var(--floor); color: var(--ink);
          font: 17px/1.65 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
   header { padding: 64px 0 8px; text-align: center; }
-  .eyebrow { font-size: 14px; font-weight: 600; letter-spacing: .34em;
-             color: var(--ink-soft); text-transform: uppercase; }
-  h1 { font-size: 56px; font-weight: 800; letter-spacing: -.03em; margin: 6px 0 14px; }
-  /* The signature, drawn in the game's own language: a room split into a
-     square mat and a strip. Same statement as the app icon. */
-  .lockup { display: flex; align-items: center; justify-content: center; gap: 0; }
-  .lockup span { display: block; height: 22px; background: var(--mat);
-                 border: 2.5px solid var(--heri); }
-  .lockup .sq { width: 22px; border-right-width: 1.25px; }
-  .lockup .strip { width: 46px; border-left-width: 1.25px; }
-  .tagline { font-size: 21px; color: var(--ink-soft); margin: 22px 0 0; text-align: center; }
+  h1 { font-size: 52px; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 0; }
+  /* The wordmark's dash: the drag that lays a mat, corner to corner, with
+     a square tick at each end. The same mark the app draws. */
+  .name { position: relative; display: inline-block; }
+  .name .dash { position: absolute; left: -4%; right: -2%; top: 18%; bottom: 22%;
+                pointer-events: none; }
+  .tagline { font-size: 21px; color: var(--ink-soft); margin: 18px 0 0; text-align: center; }
   .lede { font-size: 19px; margin: 34px 0 0; }
   h2 { font-size: 24px; letter-spacing: -.02em; margin: 52px 0 10px; }
   h3 { font-size: 17px; margin: 26px 0 4px; }
   p { margin: 0 0 14px; }
   a { color: var(--heri); }
-  .card { background: var(--surface); border-radius: 18px; padding: 26px; margin: 22px 0; }
+  .card { background: var(--panel); border: 1px solid var(--hairline);
+          padding: 26px; margin: 22px 0; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 42px; } }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 40px; } }
   .cols h3 { margin-top: 0; }
   ul { margin: 0; padding-left: 20px; } li { margin-bottom: 6px; }
-  /* Playable board */
-  #board { display: block; margin: 0 auto; touch-action: manipulation; }
+  #board { display: block; margin: 0 auto; max-width: 100%; height: auto;
+           touch-action: manipulation; }
   #board .cell { cursor: pointer; }
-  .boardnote { text-align: center; color: var(--ink-soft); font-size: 15px; min-height: 26px; margin: 6px 0 0; }
-  .btn { display: inline-block; background: var(--heri); color: var(--straw);
-         border: 0; border-radius: 11px; padding: 9px 16px; font: inherit;
+  .boardnote { text-align: center; color: var(--ink-soft); font-size: 15px;
+               min-height: 26px; margin: 6px 0 0; }
+  .btn { display: inline-block; background: var(--ink); color: var(--floor);
+         border: 0; padding: 10px 18px; font: inherit;
          font-weight: 600; font-size: 15px; cursor: pointer; }
-  footer { border-top: 1px solid var(--hairline); margin-top: 60px; padding: 22px 0 70px;
-           color: var(--ink-soft); font-size: 14px; text-align: center; }
+  .seal { display: inline-block; background: var(--shu); color: var(--ink);
+          font-weight: 700; padding: 2px 8px; }
+  footer { border-top: 1px solid var(--hairline); margin-top: 60px;
+           padding: 22px 0 70px; color: var(--ink-soft); font-size: 14px;
+           text-align: center; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Just</div>
-  <h1>Shikaku</h1>
-  <div class="lockup" aria-hidden="true">
-    <span class="sq"></span><span class="strip"></span>
-  </div>
-  <p class="tagline">Learn to lay the mats.</p>
+  <h1>Just
+    <span class="name">Shikaku
+      <svg class="dash" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="4" y1="27" x2="96" y2="3" stroke="var(--heri)" stroke-width="3.2"/>
+        <rect x="1" y="24" width="6" height="6" fill="var(--heri)"/>
+        <rect x="93" y="0" width="6" height="6" fill="var(--heri)"/>
+      </svg>
+    </span>
+  </h1>
+  <p class="tagline">The Shikaku that teaches.</p>
 </header>
 
-<p class="lede">Shikaku is a puzzle of rectangles. A grid holds a few numbers, and your job
-is to split the whole grid into rectangles so that each one contains exactly one number,
-and that number is the rectangle's area. A 6 sits in a rectangle of six cells, a 1 in a
-single cell. That is the whole rulebook. Getting good at it is another matter, and that is
-what the app is for.</p>
+<p class="lede">Shikaku hands you a grid of numbers, and you carve it into rectangles
+until every number sits in a rectangle of exactly that many cells. The rules take a
+minute. Playing well takes arguments, ones with names like Prime Strips, Lone Reacher,
+and No Orphans, and those arguments are what this app is about.</p>
 
 <h2>Try it</h2>
 <div class="card">
@@ -88,54 +87,69 @@ what the app is for.</p>
   <p style="text-align:center;margin:10px 0 0"><button class="btn" id="reset">Start over</button></p>
 </div>
 
-<h2>How it teaches</h2>
-<p>Most puzzle apps leave you to work out the technique yourself, or hand you the answer
-when you are stuck. Just Shikaku does neither.</p>
+<h2>What no other Shikaku has</h2>
 
-<h3>Seven techniques, one idea at a time</h3>
-<p>The game runs on seven named techniques: Ones, Prime Strips, Only Fit, Common Ground,
-Lone Reacher, No Orphans and Count the Room. Each has its own lesson, a short board where
-the technique is the way through rather than a page of text to read, and the sequence runs
-from the first easy deduction to the counting endgame.</p>
+<h3>A curriculum</h3>
+<p>Seven named techniques, each with its own lesson on a real position where that
+technique is the next move. The path runs from the first easy deduction to the counting
+endgame, and seven seals fill as you learn.</p>
 
-<h3>Hints that name the technique</h3>
-<p>Ask for a hint and the app points you at a region first. Ask again and it names the
-technique and states the rule. Ask again and it draws the argument on the board. Only the
-last step lays the rectangle for you, and taking it is a deliberate act.</p>
+<h3>Hints that argue</h3>
+<p>Ask for help and the reasoning climbs a ladder: a nudge, then the technique's name,
+then the full argument drawn on your board. You see the candidates that could work, the
+ones that die under hatching, and the cell that decides it, with the technique lettered
+above the grid. The app can lay the rectangle for you, but that is the ladder's last
+rung and it applies exactly one argued move. Your solve stays yours.</p>
 
-<h3>Mastery you actually earned</h3>
-<p>Practice drills rehearse one technique at a time. Progress counts only the deductions
-you worked out unaided, so the path reflects what you can really do.</p>
+<h3>A daily that teaches</h3>
+<p>Everyone gets the same room each day, and each day's room is built around one named
+technique. The week climbs the curriculum, a full week earns its own seal, and missed
+days stay playable because the boards are deterministic.</p>
 
-<h2>No guessing, ever</h2>
-<p>Every puzzle has exactly one solution, and every puzzle can be finished by reasoning
-alone. The app proves both before a board ever reaches you. If you are stuck, it is never
-because the board is unfair; there is always a next deduction waiting to be found.</p>
+<h3>The proof</h3>
+<p>After every win, the app replays your own solve and checks each rectangle against its
+solver. Moves it can derive from the position you played them in count as worked out;
+moves a hint laid are marked as shown; correct moves beyond the curriculum's reach are
+called what they are, a leap. No other puzzle app can tell you which of your own moves
+were reasoned, because no other engine in this category knows why a move is right.</p>
+
+<h3>Training that is training</h3>
+<p>Spot It serves ten real mid-game positions where one technique is the move; lay the
+right mat or take a strike, and three strikes end the run. The Climb is room after room
+up the difficulty ladder under the same three strikes. There is no clock anywhere in
+either. Accuracy is the game.</p>
+
+<h2>Proof behind every board</h2>
+<p>Before a puzzle reaches you, the engine has verified two things: the board has
+exactly one solution, and the taught techniques are enough to reach it. Guessing is
+never required, on any board, at any difficulty. If you are stuck, there is always a
+next deduction waiting, and the hint ladder will walk you to it.</p>
 
 <h2>What it costs</h2>
 <div class="cols">
   <div class="card">
-    <h3>Free</h3>
+    <h3>Free forever</h3>
     <ul>
-      <li>The rules tutorial and the first two lessons, Ones and Prime Strips</li>
-      <li>5x5 and 7x7 boards, every difficulty</li>
-      <li>An error check when something has gone wrong</li>
-      <li>Your best times</li>
+      <li>The rules and the first two technique lessons</li>
+      <li>The daily room, its streak, and the weekly seal</li>
+      <li>5x5 and 7x7 boards at every difficulty, including the hardest</li>
+      <li>An error check that flags a mat that cannot stay</li>
+      <li>Best times</li>
     </ul>
   </div>
   <div class="card">
-    <h3>One purchase</h3>
+    <h3>The whole room, once</h3>
     <ul>
-      <li>Five more lessons</li>
-      <li>Every practice drill</li>
-      <li>Hints that teach instead of answering</li>
-      <li>The 10x10 and 12x12 boards</li>
-      <li>Stats and your technique path</li>
+      <li>The five remaining lessons</li>
+      <li>Timed drills and Spot It for every technique</li>
+      <li>The full hint ladder with the drawn argument</li>
+      <li>10x10 and 12x12 boards</li>
+      <li>Complete statistics</li>
     </ul>
   </div>
 </div>
-<p>No ads, no subscription, and none of the timers, energy or coins that puzzle apps tend
-to arrive with. Everything works offline.</p>
+<p>One purchase. No subscription, and no ads. Hints are never a currency, and difficulty
+is never behind the purchase. Everything works offline.</p>
 
 <h2>Privacy</h2>
 <div class="card">
@@ -153,12 +167,12 @@ thinks it is unlocked. If nothing comes back, check you are signed in with the A
 that made the purchase.</p>
 
 <h3>Does it work offline?</h3>
-<p>Yes, entirely. Puzzles are generated on your device. The only time the app talks to the
-network is to ask the App Store whether the unlock has been purchased.</p>
+<p>Yes, entirely. Every board is built on your device. The one network request the app
+ever makes is asking the App Store whether the unlock has been purchased.</p>
 
-<h3>Where is my progress kept?</h3>
+<h3>Where does my progress live?</h3>
 <p>On the device, in the app's own storage. There is no cloud sync, so deleting the app
-deletes your stats, best times and lesson progress.</p>
+deletes your stats, best times, streak and lesson progress.</p>
 
 <h3>This board looks unsolvable</h3>
 <p>It isn't. Every shipped puzzle is checked twice before you see it: once to prove it has
@@ -217,9 +231,9 @@ wrong, mail me and say which one.</p>
 
   function draw() {
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    // The straw floor and its lattice.
+    // The lacquered floor and its lattice.
     svg.appendChild(el('rect', { x: PAD, y: PAD, width: N * CELL, height: N * CELL,
-                                 fill: 'var(--straw)' }));
+                                 fill: 'var(--floor)' }));
     for (var i = 1; i < N; i++) {
       svg.appendChild(el('line', { x1: px(i), y1: PAD, x2: px(i), y2: PAD + N * CELL,
                                    stroke: 'var(--hairline)', 'stroke-width': 1.5 }));
@@ -231,7 +245,7 @@ wrong, mail me and say which one.</p>
       svg.appendChild(el('rect', {
         x: px(m.c0) + 3, y: px(m.r0) + 3,
         width: (m.c1 - m.c0 + 1) * CELL - 6, height: (m.r1 - m.r0 + 1) * CELL - 6,
-        fill: 'var(--mat-wash)', stroke: 'var(--heri)', 'stroke-width': 4, rx: 4
+        fill: 'var(--mat)', stroke: 'var(--heri)', 'stroke-width': 4
       }));
     });
     // The anchor, marked like the snap-line's starting pin.
@@ -239,7 +253,7 @@ wrong, mail me and say which one.</p>
       svg.appendChild(el('rect', {
         x: px(anchor.col) + 7, y: px(anchor.row) + 7, width: CELL - 14, height: CELL - 14,
         fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2.5,
-        'stroke-dasharray': '7 6', rx: 4
+        'stroke-dasharray': '7 6'
       }));
     }
     // The room's frame.
