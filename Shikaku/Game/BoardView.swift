@@ -115,10 +115,11 @@ private struct MatsLayer: View {
     }
 }
 
-/// One committed mat: igusa fill, heri edge, a barely-there weave running
+/// One committed mat: opaque igusa fill, heri edge band, a weave running
 /// along the long axis (real tatami alternate weave direction — orientation
-/// is encoded, not decorated; squares get no weave), and a red have/need
-/// badge when the area disagrees with the clue.
+/// is encoded, not decorated; squares get no weave), and a have/need tag when
+/// the area disagrees with the clue. A conflicting mat is hatched over, not
+/// reddened: in this app red means the app is teaching, and nothing else.
 private struct MatView: View {
     let placed: PlacedRect
     let game: ShikakuGame
@@ -135,13 +136,16 @@ private struct MatView: View {
         // are the locally-legal wrong mats that let a player drift.
         let conflict: Bool = game.areaConflict(placed)
             || (progress.settings.errorFeedback && game.isWrong(placed))
-        ZStack(alignment: .topTrailing) {
+        // Bottom-trailing, not top-trailing: the clue numeral sits in the
+        // middle of its cell, and on a two-cell mat a top-corner tag lands on
+        // top of it.
+        ZStack(alignment: .bottomTrailing) {
             matBody(frame: frame, conflict: conflict)
-            // The have/need badge belongs to area conflicts only — a
+            // The have/need tag belongs to area conflicts only — a
             // solution-level mistake has the right count, just the wrong home.
             if game.areaConflict(placed) {
                 conflictBadge
-                    .padding(3)
+                    .padding(4)
             }
         }
         .frame(width: frame.width, height: frame.height)
@@ -161,20 +165,45 @@ private struct MatView: View {
                                isSquare: placed.rect.width == placed.rect.height)
         Rectangle()
             .fill(Theme.mat)
-            .overlay(weave.stroke(Theme.heri.opacity(0.10), lineWidth: 1))
+            .overlay(weave.stroke(Theme.heri.opacity(0.22), lineWidth: 1))
+            .overlay(matInnerShadow)
             .overlay(
                 Rectangle()
-                    .strokeBorder(conflict ? Theme.kaki : Theme.heri, lineWidth: 1.5)
+                    .strokeBorder(Theme.heri, lineWidth: 1.5)
             )
+            // A mat whose area does not match its clue is hatched over rather
+            // than outlined in red: eliminations are drawn in this app. The
+            // hatch goes dark here — bone-on-igusa reads as woven texture,
+            // which is the one thing this mark must not look like.
+            .overlay {
+                if conflict {
+                    Hatching(pitch: 6, lineWidth: 1.25, color: .black.opacity(0.5))
+                }
+            }
+            // The grout gap. Insetting each mat leaves a seam of floor between
+            // neighbours, so two adjacent rectangles read as two laid objects
+            // instead of one green region — which is both the material point
+            // and, on a crowded board, genuinely easier to parse.
+            .padding(1.5)
+    }
+
+    /// Mats sit *in* the room rather than on it. A one-stop gradient at each
+    /// edge is enough — a real inner shadow would need a mask per mat, and at
+    /// these sizes it would not read.
+    private var matInnerShadow: some View {
+        LinearGradient(colors: [.black.opacity(0.22), .clear],
+                       startPoint: .top, endPoint: .bottom)
+            .blendMode(.multiply)
+            .allowsHitTesting(false)
     }
 
     private var conflictBadge: some View {
         let need: Int = game.puzzle.clues[placed.clueIndex].value
         return Text("\(placed.rect.area)/\(need)")
             .font(Theme.numberFont(size: geo.badgeSize * 0.8))
-            .foregroundStyle(Theme.kaki)
+            .foregroundStyle(Theme.ink)
             .padding(.horizontal, 3)
-            .background(Theme.surface.opacity(0.85), in: RoundedRectangle(cornerRadius: 3))
+            .background(Theme.floor.opacity(0.92), in: Rectangle())
     }
 
     private func matAccessibilityLabel(conflict: Bool) -> String {
@@ -247,7 +276,12 @@ private struct CluesLayer: View {
     }
 }
 
-/// A satisfied clue relaxes: lighter weight, heri ink — the number is housed.
+/// A satisfied clue relaxes: lighter weight, still bone.
+///
+/// It used to switch to `Theme.heri`, which was legible on straw and is not
+/// legible on an opaque igusa mat — the two greens sit about two stops apart.
+/// The mat under the numeral already says "housed"; the weight change is the
+/// only signal the colour needs to carry.
 private struct ClueNumeral: View {
     let clue: Clue
     let isSatisfied: Bool
@@ -258,7 +292,7 @@ private struct ClueNumeral: View {
         Text("\(clue.value)")
             .font(isSatisfied ? Theme.satisfiedClueFont(size: geo.clueSize)
                               : Theme.clueFont(size: geo.clueSize))
-            .foregroundStyle(isSatisfied ? Theme.heri : Theme.ink)
+            .foregroundStyle(Theme.ink)
             .position(center)
             .animation(Motion.chrome, value: isSatisfied)
             .accessibilityLabel("Clue \(clue.value)\(isSatisfied ? ", housed" : "")")
@@ -307,8 +341,7 @@ private struct SnapLineView: View {
     private var conflictWash: some View {
         ForEach(preview.conflictCells, id: \.self) { cell in
             let f: CGRect = geo.rect(for: cell)
-            Rectangle()
-                .fill(Theme.kakiWash)
+            Hatching(pitch: 5, lineWidth: 1)
                 .frame(width: f.width, height: f.height)
                 .position(x: f.midX, y: f.midY)
         }
@@ -324,7 +357,7 @@ private struct SnapLineView: View {
                 .foregroundStyle(have == need ? Theme.heri : Theme.ink)
                 .padding(.horizontal, 4)
                 .padding(.vertical, 1)
-                .background(Theme.surface.opacity(0.9), in: RoundedRectangle(cornerRadius: 4))
+                .background(Theme.floor.opacity(0.92), in: Rectangle())
                 .position(x: frame.midX, y: frame.minY - geo.badgeSize)
         }
     }
@@ -341,7 +374,7 @@ private struct RejectedView: View {
     var body: some View {
         let frame: CGRect = geo.rect(for: rect)
         Rectangle()
-            .strokeBorder(Theme.kaki, lineWidth: 2)
+            .strokeBorder(Theme.hatch, lineWidth: 2)
             .frame(width: frame.width, height: frame.height)
             .position(x: frame.midX, y: frame.midY)
             .offset(x: shake || reduceMotion ? 0 : 5)

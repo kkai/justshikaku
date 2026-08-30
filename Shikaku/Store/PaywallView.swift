@@ -136,7 +136,7 @@ struct PaywallView: View {
         case .note(let text):
             message(text, color: Theme.inkSoft)
         case .failed(let text):
-            message(text, color: Theme.kaki)
+            message(text, color: Theme.shu)
         default:
             EmptyView()
         }

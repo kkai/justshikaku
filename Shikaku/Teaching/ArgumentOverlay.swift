@@ -32,7 +32,11 @@ struct ArgumentOverlay: View {
     }
 }
 
-/// Faint outlines for every focus cell — the highlight rung's spotlight.
+/// The highlight rung's spotlight — "look here".
+///
+/// Vermilion, not heri: this is the app pointing at something, which is the
+/// one meaning `Theme.shu` carries. In green it was indistinguishable from a
+/// mat's own edge band, which made the spotlight invisible on a laid board.
 private struct FocusMarks: View {
     let cells: [Cell]
     let geo: BoardGeometry
@@ -41,14 +45,15 @@ private struct FocusMarks: View {
         ForEach(cells, id: \.self) { cell in
             let f: CGRect = geo.rect(for: cell)
             Rectangle()
-                .strokeBorder(Theme.heri, lineWidth: 2)
+                .strokeBorder(Theme.shu, lineWidth: 2)
                 .frame(width: f.width, height: f.height)
                 .position(x: f.midX, y: f.midY)
         }
     }
 }
 
-/// Wrong mats outlined in kaki at the error ladder's highlight rung.
+/// Wrong mats hatched over at the error ladder's highlight rung — crossed
+/// out by hand, not lit up in red. See `Theme.hatch`.
 private struct ErrorMarks: View {
     let hint: Hint
     let geo: BoardGeometry
@@ -56,8 +61,10 @@ private struct ErrorMarks: View {
     var body: some View {
         ForEach(hint.errorRects, id: \.self) { rect in
             let f: CGRect = geo.rect(for: rect)
-            Rectangle()
-                .strokeBorder(Theme.kaki, style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+            // Error marks always land on a laid mat, so the hatch is dark:
+            // see the note in BoardView's mat conflict overlay.
+            Hatching(pitch: 6, lineWidth: 1.5, color: .black.opacity(0.55), crossed: true)
+                .overlay(Rectangle().strokeBorder(.black.opacity(0.55), lineWidth: 2))
                 .frame(width: f.width, height: f.height)
                 .position(x: f.midX, y: f.midY)
         }
@@ -119,7 +126,12 @@ private struct ArgumentBody: View {
     }
 }
 
-/// A dead placement: dashed ghost with a diagonal slash corner to corner.
+/// A dead placement: the candidate's dashed outline, hatched through.
+///
+/// This used to be a red dashed border plus a single corner-to-corner slash.
+/// Hatching says the same thing in the drawing's own vocabulary and leaves
+/// vermilion free to mean "look here" — which is the point the whole overlay
+/// is making.
 private struct StruckGhost: View {
     let rect: GridRect
     let geo: BoardGeometry
@@ -127,24 +139,14 @@ private struct StruckGhost: View {
     var body: some View {
         let f: CGRect = geo.rect(for: rect)
         ZStack {
+            Hatching(pitch: 6, lineWidth: 1.25)
             Rectangle()
-                .strokeBorder(Theme.kaki.opacity(0.65),
+                .strokeBorder(Theme.hatch,
                               style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
-            SlashShape()
-                .stroke(Theme.kaki.opacity(0.75), lineWidth: 2)
         }
         .frame(width: f.width, height: f.height)
         .position(x: f.midX, y: f.midY)
         .transition(.opacity)
-    }
-}
-
-private struct SlashShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX + 3, y: rect.maxY - 3))
-        path.addLine(to: CGPoint(x: rect.maxX - 3, y: rect.minY + 3))
-        return path
     }
 }
 
@@ -159,8 +161,8 @@ private struct RegionWash: View {
         ForEach(region, id: \.self) { cell in
             let f: CGRect = geo.rect(for: cell)
             Rectangle()
-                .fill(Theme.kakiWash)
-                .overlay(RegionEdge(cell: cell, others: cells).stroke(Theme.kaki, lineWidth: 2))
+                .fill(Theme.shuWash)
+                .overlay(RegionEdge(cell: cell, others: cells).stroke(Theme.shu, lineWidth: 2))
                 .frame(width: f.width, height: f.height)
                 .position(x: f.midX, y: f.midY)
         }

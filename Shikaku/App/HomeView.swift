@@ -2,9 +2,17 @@
 //  HomeView.swift
 //  Shikaku
 //
-//  The room list: continue card, size and difficulty pickers, play.
-//  Paywalled sizes stay tappable and present the paywall — never .disabled
-//  (the family rule: a locked row that cannot be tapped cannot be bought).
+//  The title screen: the room itself, the curriculum, and one way in.
+//
+//  What this screen has to do in three seconds is show what the game looks
+//  like, show that it teaches, and get the player onto a board. The previous
+//  version did none of those — it was a configuration form (two chip rows, a
+//  play bar, a Learn card) on which the board never appeared, with roughly
+//  60% of the screen empty below it.
+//
+//  The structural move that unlocked the rest: size and difficulty left the
+//  front page for a sheet (NewRoomSheet), and the last-played choice is
+//  restored, so most sessions never see a picker at all.
 //
 
 import SwiftUI
@@ -14,197 +22,163 @@ struct HomeView: View {
 
     @Environment(ProgressStore.self) private var progress
     @Environment(EntitlementStore.self) private var entitlements
-    @Environment(PaywallPresenter.self) private var paywall
+    @Environment(PuzzleCache.self) private var cache
+    @Environment(MasteryTracker.self) private var mastery
 
     @State private var size: BoardSize = .five
     @State private var difficulty: Difficulty = .gentle
+    @State private var showingNewRoom = false
 
     var body: some View {
         ZStack {
             Theme.floor.ignoresSafeArea()
-            ScrollView {
-                VStack(alignment: .leading, spacing: Layout.s5) {
-                    wordmark
-                    if progress.savedGame != nil {
-                        continueCard
+            VStack(spacing: 0) {
+                lintel
+                // One flexible gap, below the room rather than around it: the
+                // room hangs off the lintel and the controls sit on the floor,
+                // instead of a symmetric float with dead space top and bottom.
+                Spacer().frame(height: Layout.s6)
+                liveRoom
+                roomCaption
+                Spacer(minLength: Layout.s5)
+                VStack(spacing: Layout.s5) {
+                    Button { path.append(.learn) } label: {
+                        TechniquePath(mastery: mastery)
                     }
-                    sizePicker
-                    difficultyPicker
+                    .buttonStyle(.plain)
                     playButton
-                    learnRow
                 }
-                .padding(Layout.s5)
+                .padding(.horizontal, Layout.s5)
+                .padding(.bottom, Layout.s4)
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: Layout.s2) {
-                    Button { path.append(.stats) } label: {
-                        Image(systemName: "chart.bar")
-                            .frame(minWidth: 44, minHeight: 44)
-                    }
-                    .accessibilityLabel("Statistics")
-                    Button { path.append(.settings) } label: {
-                        Image(systemName: "gearshape")
-                            .frame(minWidth: 44, minHeight: 44)
-                    }
-                    .accessibilityLabel("Settings")
-                }
-                .foregroundStyle(Theme.inkSoft)
-            }
+        .toolbar { toolbarItems }
+        .sheet(isPresented: $showingNewRoom) {
+            NewRoomSheet(size: $size, difficulty: $difficulty, onStart: start)
         }
+        .onAppear(perform: restoreLastPlayed)
     }
 
-    private var wordmark: some View {
-        VStack(alignment: .leading, spacing: Layout.s1) {
+    // MARK: - The lintel
+
+    /// A band of timber across the head of the screen with the wordmark set
+    /// into it — the same wood the board is framed in, so the app reads as
+    /// one built object rather than a page with a title on it.
+    private var lintel: some View {
+        HStack(spacing: Layout.s3) {
+            ShikakuMark(side: 32)
             Text("Just Shikaku")
                 .font(Theme.title)
                 .foregroundStyle(Theme.ink)
-            Text("Divide the room into rectangles.")
-                .font(.subheadline)
-                .foregroundStyle(Theme.inkSoft)
+                .shadow(color: .black.opacity(0.55), radius: 0, y: 1)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Layout.s5)
+        .padding(.vertical, Layout.s4)
+        .frame(maxWidth: .infinity)
+        .background(Theme.frame)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(.black.opacity(0.45)).frame(height: 1)
         }
     }
 
-    private var continueCard: some View {
+    // MARK: - The live room
+
+    /// The board, on the front page, in the full material treatment.
+    ///
+    /// Every competitor's home screen is a menu. This one is the game: if a
+    /// save exists the miniature *is* that board and tapping it continues; on
+    /// a first run it shows a laid demo room and points at the rules instead.
+    private var liveRoom: some View {
         Button {
-            path.append(.resume)
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: Layout.s1) {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundStyle(Theme.ink)
-                    if let saved = progress.savedGame {
-                        Text(savedLabel(saved))
-                            .font(.subheadline)
-                            .foregroundStyle(Theme.inkSoft)
-                    }
-                }
-                Spacer()
-                Image(systemName: "arrow.right")
-                    .foregroundStyle(Theme.inkSoft)
+            if progress.savedGame != nil {
+                path.append(.resume)
+            } else {
+                path.append(.learn)
             }
-            .padding(Layout.s4)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Layout.cardRadius))
+        } label: {
+            RoomBoard(game: roomGame)
+                .allowsHitTesting(false)
+                .frame(maxWidth: 340)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(progress.savedGame != nil
+                            ? "Continue your room, \(savedLabel)"
+                            : "Learn the rules")
     }
 
-    private func savedLabel(_ saved: GameSnapshot) -> String {
+    private var roomCaption: some View {
+        Text(progress.savedGame != nil ? savedLabel : "Learn the rules first.")
+            .font(progress.savedGame != nil ? Theme.numberFont(size: 13) : .subheadline)
+            .foregroundStyle(Theme.inkSoft)
+            .padding(.top, Layout.s3)
+    }
+
+    /// The saved board when there is one, otherwise a laid demo room. Held in
+    /// a computed property rather than `@State` so a save made on the play
+    /// screen is reflected the moment the player comes back.
+    private var roomGame: ShikakuGame {
+        if let saved = progress.savedGame {
+            return ShikakuGame(
+                puzzle: saved.puzzle,
+                size: BoardSize(rawValue: saved.sizeRaw) ?? .five,
+                difficulty: Difficulty(rawValue: saved.difficultyRaw) ?? .gentle,
+                board: saved.board)
+        }
+        // A real lesson position: a 7×7 with two mats already laid, so a
+        // first run still sees a room with something in it.
+        let demo = TutorialPuzzles.lesson(for: .corridorCount)
+        return ShikakuGame(puzzle: demo.puzzle, size: .seven, difficulty: .gentle,
+                           board: demo.startingBoard)
+    }
+
+    private var savedLabel: String {
+        guard let saved = progress.savedGame else { return "" }
         let size = BoardSize(rawValue: saved.sizeRaw)?.label ?? ""
         let tier = Difficulty(rawValue: saved.difficultyRaw)?.label ?? ""
         return "\(size) · \(tier) · \(TimeFormatting.clock(saved.elapsedSeconds))"
     }
 
-    private var sizePicker: some View {
-        VStack(alignment: .leading, spacing: Layout.s2) {
-            Text("Room size")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.inkSoft)
-            HStack(spacing: Layout.s2) {
-                ForEach(BoardSize.allCases) { candidate in
-                    sizeChip(candidate)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func sizeChip(_ candidate: BoardSize) -> some View {
-        let available = FeatureGate.isBoardSizeAvailable(candidate, unlocked: entitlements.isUnlocked)
-        let selected = size == candidate
-        Button {
-            if available {
-                size = candidate
-            } else {
-                paywall.present(.largerBoards)
-            }
-        } label: {
-            HStack(spacing: 3) {
-                Text(candidate.label)
-                    .font(Theme.numberFont(size: 15))
-                if !available {
-                    Image(systemName: "lock")
-                        .font(.caption2)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Layout.s2)
-            .background(
-                selected ? AnyShapeStyle(Theme.ink) : AnyShapeStyle(Theme.surface),
-                in: RoundedRectangle(cornerRadius: Layout.controlRadius))
-            .foregroundStyle(selected ? Theme.surface : Theme.ink)
-        }
-        .accessibilityLabel("\(candidate.label)\(available ? "" : ", locked")")
-    }
-
-    private var difficultyPicker: some View {
-        VStack(alignment: .leading, spacing: Layout.s2) {
-            Text("Difficulty")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.inkSoft)
-            // One control vocabulary for the whole screen: the same ink-fill
-            // chips as the size row, not a stock segmented control (system
-            // gray chrome reads as someone else's app on this floor).
-            // Difficulty is never gated: a free player can play severe.
-            HStack(spacing: Layout.s1) {
-                ForEach(Difficulty.allCases) { tier in
-                    difficultyChip(tier)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func difficultyChip(_ tier: Difficulty) -> some View {
-        let selected = difficulty == tier
-        Button {
-            difficulty = tier
-        } label: {
-            Text(tier.label)
-                .font(.footnote.weight(.medium))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Layout.s2)
-                .background(
-                    selected ? AnyShapeStyle(Theme.ink) : AnyShapeStyle(Theme.surface),
-                    in: RoundedRectangle(cornerRadius: Layout.controlRadius))
-                .foregroundStyle(selected ? Theme.surface : Theme.ink)
-        }
-        .accessibilityLabel("\(tier.label)\(selected ? ", selected" : "")")
-    }
+    // MARK: - Getting in
 
     private var playButton: some View {
-        Button("Lay out a room") {
-            path.append(.play(size: size, difficulty: difficulty))
-        }
-        .buttonStyle(PrimaryButtonStyle())
+        Button("Lay out a room") { showingNewRoom = true }
+            .buttonStyle(PrimaryButtonStyle())
     }
 
-    private var learnRow: some View {
-        Button {
-            path.append(.learn)
-        } label: {
-            HStack {
-                Image(systemName: "book")
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Learn")
-                        .font(.headline)
-                        .foregroundStyle(Theme.ink)
-                    Text("The rules, then the seven ways to see a rectangle.")
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.inkSoft)
-                        .fixedSize(horizontal: false, vertical: true)
+    private func start() {
+        progress.recordLastPlayed(size: size, difficulty: difficulty)
+        path.append(.play(size: size, difficulty: difficulty))
+    }
+
+    /// Restores the last choice and warms a puzzle for it, so the common path
+    /// — open the app, tap through the sheet — does not meet a loading
+    /// screen. Warming is skipped for a size the player cannot open.
+    private func restoreLastPlayed() {
+        guard let choice = progress.lastPlayed else { return }
+        size = choice.size
+        difficulty = choice.difficulty
+        guard FeatureGate.isBoardSizeAvailable(choice.size, unlocked: entitlements.isUnlocked)
+        else { return }
+        cache.warm(size: choice.size, tier: choice.difficulty)
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            HStack(spacing: Layout.s2) {
+                Button { path.append(.stats) } label: {
+                    Image(systemName: "chart.bar")
+                        .frame(minWidth: 44, minHeight: 44)
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(Theme.inkSoft)
+                .accessibilityLabel("Statistics")
+                Button { path.append(.settings) } label: {
+                    Image(systemName: "gearshape")
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                .accessibilityLabel("Settings")
             }
-            .padding(Layout.s4)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Layout.cardRadius))
+            .foregroundStyle(Theme.inkSoft)
         }
-        .buttonStyle(.plain)
     }
 }

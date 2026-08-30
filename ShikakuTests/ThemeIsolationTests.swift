@@ -21,8 +21,9 @@ import UIKit
 // forever.
 
 private nonisolated func nonisolatedThemeColors() -> [Color] {
-    [Theme.floor, Theme.surface, Theme.ink, Theme.inkSoft, Theme.mat,
-     Theme.heri, Theme.inkLine, Theme.kaki, Theme.kakiWash, Theme.hairline]
+    [Theme.floor, Theme.frame, Theme.surface, Theme.ink, Theme.inkSoft,
+     Theme.mat, Theme.heri, Theme.inkLine, Theme.shu, Theme.shuWash,
+     Theme.hatch, Theme.hairline]
 }
 
 private nonisolated func nonisolatedThemeFonts() -> [Font] {
@@ -56,7 +57,7 @@ private nonisolated func rgba(_ color: UIColor) -> [CGFloat] {
     /// easy to delete, taking the compile-time guard with it) and keeps their
     /// token lists in sync with Theme/Motion.
     @Test func designTokensAreReachableFromANonisolatedContext() {
-        #expect(nonisolatedThemeColors().count == 10)
+        #expect(nonisolatedThemeColors().count == 12)
         #expect(nonisolatedThemeFonts().count == 5)
         #expect(nonisolatedMotionTokens().count == 6)
         #expect(Motion.argumentStagger > 0)
@@ -77,13 +78,14 @@ private nonisolated func rgba(_ color: UIColor) -> [CGFloat] {
     /// cloned parallel runs. Do not "fix" Theme because of it.
     @Test func dynamicColorsResolveOffTheMainThread() async {
         // Every Shikaku token has distinct light/dark components by design, so
-        // all ten belong in the "was the provider exercised" check below.
+        // all twelve belong in the "was the provider exercised" check below.
         let tokens: [(String, Color)] = [
-            ("floor", Theme.floor), ("surface", Theme.surface),
-            ("ink", Theme.ink), ("inkSoft", Theme.inkSoft),
-            ("mat", Theme.mat), ("heri", Theme.heri),
-            ("inkLine", Theme.inkLine), ("kaki", Theme.kaki),
-            ("kakiWash", Theme.kakiWash), ("hairline", Theme.hairline),
+            ("floor", Theme.floor), ("frame", Theme.frame),
+            ("surface", Theme.surface), ("ink", Theme.ink),
+            ("inkSoft", Theme.inkSoft), ("mat", Theme.mat),
+            ("heri", Theme.heri), ("inkLine", Theme.inkLine),
+            ("shu", Theme.shu), ("shuWash", Theme.shuWash),
+            ("hatch", Theme.hatch), ("hairline", Theme.hairline),
         ]
 
         // No #expect inside the detached task: Swift Testing tracks the current

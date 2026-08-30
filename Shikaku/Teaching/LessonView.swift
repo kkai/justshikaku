@@ -37,8 +37,7 @@ struct LessonView: View {
                 Text(TechniqueContent.name(for: technique))
                     .font(Theme.heading)
                     .foregroundStyle(Theme.ink)
-                BoardView(game: game)
-                    .padding(.horizontal, Layout.s2)
+                RoomBoard(game: game)
                     .allowsHitTesting(phase == .play)
                 prompt
                 Spacer(minLength: Layout.s2)
@@ -48,19 +47,21 @@ struct LessonView: View {
         }
         .navigationTitle("Lesson")
         .navigationBarTitleDisplayMode(.inline)
+        .swipeBackDisabled()
         .onAppear(perform: prepare)
         .onChange(of: game.board) { checkProgress() }
     }
 
     private var prompt: some View {
-        Text(promptText)
-            .font(.subheadline)
-            .foregroundStyle(Theme.ink)
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Layout.s4)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Layout.cardRadius))
-            .padding(.horizontal, Layout.s4)
+        // Marked while the argument is being drawn: the vermilion bar is the
+        // app saying "this is the teaching part", and it is the only place
+        // shu appears on a lesson screen.
+        AnnotationRail(marked: phase == .argument) {
+            Text(promptText)
+                .font(.subheadline)
+                .foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var promptText: String {
@@ -160,16 +161,13 @@ struct RulesTutorialView: View {
                 Text("The rules")
                     .font(Theme.heading)
                     .foregroundStyle(Theme.ink)
-                BoardView(game: game)
-                    .padding(.horizontal, Layout.s5)
-                Text(promptText)
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Layout.s4)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: Layout.cardRadius))
-                    .padding(.horizontal, Layout.s4)
+                RoomBoard(game: game)
+                AnnotationRail {
+                    Text(promptText)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 Spacer(minLength: Layout.s2)
                 if game.didWin {
                     Button("I'm ready") { dismiss() }
@@ -181,6 +179,7 @@ struct RulesTutorialView: View {
         }
         .navigationTitle("Learn")
         .navigationBarTitleDisplayMode(.inline)
+        .swipeBackDisabled()
     }
 
     private var promptText: String {

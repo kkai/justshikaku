@@ -2,8 +2,14 @@ import SwiftUI
 
 /// Radius, spacing, and button vocabulary. One scale, or the app grows five
 /// corner radii and fourteen button treatments (a sibling measured exactly
-/// that). Mats are square-cornered on purpose — the roundness budget is spent
-/// on cards and sheets only.
+/// that).
+///
+/// **Nothing on this floor is rounded.** The roundness budget used to be
+/// spent on cards and sheets; those are gone (see `AnnotationRail`), and a
+/// rounded control sitting next to a square mat, a square seal and a square
+/// timber frame was the last thing on screen that still looked like a stock
+/// iOS app. `controlRadius` stays at zero rather than being deleted so the
+/// decision is visible and reversible in one place.
 ///
 /// `nonisolated` for the same reason as `Theme`.
 nonisolated enum Layout {
@@ -17,7 +23,7 @@ nonisolated enum Layout {
     static let s6: CGFloat = 32
 
     // Radius scale.
-    static let controlRadius: CGFloat = 8
+    static let controlRadius: CGFloat = 0
     static let cardRadius: CGFloat = 12
     static let sheetRadius: CGFloat = 16
 }
@@ -26,10 +32,10 @@ nonisolated struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
-            .foregroundStyle(Theme.surface)
+            .foregroundStyle(Theme.floor)
             .padding(.vertical, Layout.s3)
             .frame(maxWidth: .infinity)
-            .background(Theme.ink, in: RoundedRectangle(cornerRadius: Layout.controlRadius))
+            .background(Theme.ink, in: Rectangle())
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
@@ -42,9 +48,9 @@ nonisolated struct SecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, Layout.s3)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: Layout.controlRadius)
+                Rectangle()
                     .strokeBorder(Theme.hairline, lineWidth: 1)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: Layout.controlRadius))
+                    .background(Theme.frame, in: Rectangle())
             )
             .opacity(configuration.isPressed ? 0.85 : 1)
     }

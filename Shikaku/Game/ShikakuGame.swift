@@ -47,7 +47,7 @@ final class ShikakuGame {
         var clueIndex: Int?
         /// Number of clues swept — 0 or 2+ means the release will reject.
         var clueCount: Int
-        /// Cells that would collide with an existing mat (shown kaki-washed;
+        /// Cells that would collide with an existing mat (shown hatched;
         /// commit removes those mats — redraw-over is the standard fluid
         /// Shikaku interaction and doubles as resize).
         var conflictCells: [Cell]

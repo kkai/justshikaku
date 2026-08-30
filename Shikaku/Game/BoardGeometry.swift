@@ -20,9 +20,14 @@ nonisolated struct BoardGeometry: Equatable, Sendable {
     ///
     /// `cellSize` is floored to a whole point: fractional cell sizes put seams
     /// between cells on some scales and not others, which reads as a rendering
-    /// bug. The cap keeps small boards from ballooning until they stop reading
-    /// as a room.
-    init(size: Int, container: CGSize, maxCellSize: CGFloat = 64) {
+    /// bug.
+    ///
+    /// The cap was 64, which is why a 5x5 board filled barely half the width
+    /// of a phone and every screenshot had a dead lower half. The board is the
+    /// one distinctive thing on screen, so it fills the width it is given; the
+    /// cap now only bites on iPad, where an unbounded board would stop reading
+    /// as a room and start reading as a floor plan.
+    init(size: Int, container: CGSize, maxCellSize: CGFloat = 96) {
         self.size = max(size, 1)
         let available = min(container.width, container.height)
         let fitted = (available / CGFloat(self.size)).rounded(.down)

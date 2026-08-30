@@ -39,13 +39,28 @@ private nonisolated extension NSColor {
 }
 #endif
 
-/// Semantic color and type tokens. **The tatami room**: Shikaku (四角) puzzles
-/// are literally tatami floor plans, so the board is a room being laid out —
-/// a straw-paper floor, igusa-green mats with a dark woven edge, sumi-ink
-/// numerals, and one persimmon accent reserved for errors and the win stamp.
-/// Monospaced digits carry the carpenter's-drawing voice; where Kakuro is
-/// serif newsprint and Hashi is a rounded woodblock sea, Shikaku is a plan
-/// drawn in ink.
+/// Semantic color and type tokens. **The lacquered room**: Shikaku (四角)
+/// puzzles are literally tatami floor plans, so the board is a room being laid
+/// out — seen from directly above, the way the app icon sees it. A lacquered
+/// dark floor, a wood frame around the board, opaque igusa-green mats with a
+/// woven edge band, bone numerals, and shu vermilion reserved for teaching.
+///
+/// Three rules hold this together and are worth defending:
+///
+/// 1. **Green is dominant, not an accent.** The mats are the largest coloured
+///    area on every screen. Near-black with a single vermilion accent is a
+///    stock look; a material triad with wood doing structural work is not.
+/// 2. **Vermilion means teaching**, never error. Eliminations and wrong mats
+///    are *hatched* (`hatch`), because a carpenter rules something out by
+///    drawing on it. This also retires the old constraint that the accent and
+///    the win stamp could never share a screen.
+/// 3. **Opaque, always.** No materials, no blur, no translucency anywhere —
+///    the deliberate anti-Liquid-Glass stance, and the opposite of the nearest
+///    competitor's stated design language.
+///
+/// The app ships dark only (see `ShikakuApp`); the light values below are kept
+/// live so the appearance can return without touching the isolation-critical
+/// structure of this file.
 ///
 /// `nonisolated` is load-bearing, not tidiness. The project builds with
 /// `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, so without it `Theme` — and the
@@ -61,39 +76,57 @@ nonisolated enum Theme {
 
     // MARK: - Colors (light / dark pairs)
 
-    /// The straw-paper floor behind the board; dark mode is warm lacquer.
+    /// The lacquered floor the whole app sits on. Warm, not neutral: this is
+    /// wood under lacquer, not a grey.
     static let floor = dynamic(light: ThemeRGBA(red: 0.937, green: 0.914, blue: 0.855, alpha: 1),
-                               dark: ThemeRGBA(red: 0.090, green: 0.078, blue: 0.059, alpha: 1))
-    /// Cards and sheets.
+                               dark: ThemeRGBA(red: 0.078, green: 0.063, blue: 0.047, alpha: 1))
+    /// The wood band the board is set into, and the ground for inlaid marks.
+    /// The mid-tone between `floor` and `mat` — it is what stops the palette
+    /// reading as black-plus-one-accent.
+    static let frame = dynamic(light: ThemeRGBA(red: 0.541, green: 0.420, blue: 0.271, alpha: 1),
+                               dark: ThemeRGBA(red: 0.227, green: 0.165, blue: 0.094, alpha: 1))
+    /// Sheets and the few remaining raised panels. Being retired from the
+    /// board and from inline panels — see Layout.
     static let surface = dynamic(light: .white,
-                                 dark: ThemeRGBA(red: 0.133, green: 0.118, blue: 0.090, alpha: 1))
-    /// Sumi charcoal: clue numerals, primary text, the drag line.
+                                 dark: ThemeRGBA(red: 0.118, green: 0.098, blue: 0.075, alpha: 1))
+    /// Bone: clue numerals, primary text, the drag line.
     static let ink = dynamic(light: ThemeRGBA(red: 0.149, green: 0.137, blue: 0.110, alpha: 1),
-                             dark: ThemeRGBA(red: 0.925, green: 0.910, blue: 0.863, alpha: 1))
+                             dark: ThemeRGBA(red: 0.949, green: 0.918, blue: 0.855, alpha: 1))
     /// Secondary text, quiet labels. 0.78 alpha, not 0.55 — a sibling's
     /// contrast audit failed at 0.55 and the fix is worth inheriting.
     static let inkSoft = dynamic(light: ThemeRGBA(red: 0.149, green: 0.137, blue: 0.110, alpha: 0.78),
-                                 dark: ThemeRGBA(red: 0.925, green: 0.910, blue: 0.863, alpha: 0.76))
-    /// Igusa-green wash for committed mats — the only large colour on the
-    /// board, and it is earned: an empty board is quiet straw.
-    static let mat = dynamic(light: ThemeRGBA(red: 0.541, green: 0.608, blue: 0.431, alpha: 0.30),
-                             dark: ThemeRGBA(red: 0.333, green: 0.408, blue: 0.290, alpha: 0.38))
+                                 dark: ThemeRGBA(red: 0.949, green: 0.918, blue: 0.855, alpha: 0.76))
+    /// Igusa green for committed mats. **Opaque, and the dominant colour of
+    /// the app** — the mats are the largest coloured area on every screen. If
+    /// a build ever reads as "black with one red accent", this is too dark:
+    /// raise it rather than adding a colour.
+    static let mat = dynamic(light: ThemeRGBA(red: 0.541, green: 0.608, blue: 0.431, alpha: 1),
+                             dark: ThemeRGBA(red: 0.243, green: 0.333, blue: 0.251, alpha: 1))
     /// The mat's woven edge band (heri): committed rectangle borders, and the
     /// satisfied clue's ink.
     static let heri = dynamic(light: ThemeRGBA(red: 0.243, green: 0.290, blue: 0.208, alpha: 1),
                               dark: ThemeRGBA(red: 0.576, green: 0.647, blue: 0.514, alpha: 1))
-    /// The sumitsubo snap-line: drag preview stroke and area badge.
+    /// The sumitsubo snap-line: drag preview stroke and area tag.
     static let inkLine = dynamic(light: ThemeRGBA(red: 0.149, green: 0.137, blue: 0.110, alpha: 1),
-                                 dark: ThemeRGBA(red: 0.925, green: 0.910, blue: 0.863, alpha: 1))
-    /// Kaki persimmon: errors and the win stamp — never on screen together.
-    static let kaki = dynamic(light: ThemeRGBA(red: 0.769, green: 0.341, blue: 0.180, alpha: 1),
-                              dark: ThemeRGBA(red: 0.851, green: 0.482, blue: 0.322, alpha: 1))
-    /// Soft kaki wash for conflict cells during a drag.
-    static let kakiWash = dynamic(light: ThemeRGBA(red: 0.769, green: 0.341, blue: 0.180, alpha: 0.18),
-                                  dark: ThemeRGBA(red: 0.851, green: 0.482, blue: 0.322, alpha: 0.24))
+                                 dark: ThemeRGBA(red: 0.949, green: 0.918, blue: 0.855, alpha: 1))
+    /// Shu vermilion — **the teaching accent, and nothing else**. Hint focus,
+    /// the hanko seals, the commit flash, the win stamp. It deliberately no
+    /// longer marks errors: red on this board means "the app is showing you
+    /// something", which is the one thing no competitor's board can say.
+    /// Never more than two elements at a time.
+    static let shu = dynamic(light: ThemeRGBA(red: 0.769, green: 0.204, blue: 0.122, alpha: 1),
+                             dark: ThemeRGBA(red: 0.820, green: 0.251, blue: 0.153, alpha: 1))
+    /// Shu at wash strength, for the region a hint is arguing about.
+    static let shuWash = dynamic(light: ThemeRGBA(red: 0.769, green: 0.204, blue: 0.122, alpha: 0.16),
+                                 dark: ThemeRGBA(red: 0.820, green: 0.251, blue: 0.153, alpha: 0.22))
+    /// Ruled-out ink: the hatching over an eliminated placement or a wrong
+    /// mat. Elimination is drawn, not coloured — that is what makes room for
+    /// `shu` to mean teaching.
+    static let hatch = dynamic(light: ThemeRGBA(red: 0.149, green: 0.137, blue: 0.110, alpha: 0.42),
+                               dark: ThemeRGBA(red: 0.949, green: 0.918, blue: 0.855, alpha: 0.46))
     /// Hairlines, lattice dots, separators.
     static let hairline = dynamic(light: ThemeRGBA(red: 0.149, green: 0.137, blue: 0.110, alpha: 0.13),
-                                  dark: ThemeRGBA(red: 0.925, green: 0.910, blue: 0.863, alpha: 0.13))
+                                  dark: ThemeRGBA(red: 0.949, green: 0.918, blue: 0.855, alpha: 0.13))
 
     /// The closure is *also* explicitly `@Sendable`. That is redundant while
     /// `Theme` is `nonisolated` — a `@Sendable` closure never inherits actor

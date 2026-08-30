@@ -23,15 +23,22 @@ struct GameView: View {
     var body: some View {
         ZStack {
             Theme.floor.ignoresSafeArea()
-            // Top-aligned: the board belongs under the player's thumbline,
-            // not floating in a centred block with dead straw above it.
+            // The room sits in the middle of the screen with the controls
+            // docked to the bottom edge. It used to be top-aligned against a
+            // 64pt cell cap, which left the lower 40% of every screen — and
+            // every App Store screenshot — empty.
             VStack(spacing: Layout.s4) {
                 header
-                BoardView(game: game)
-                    .padding(.horizontal, Layout.s2)
+                Spacer(minLength: 0)
+                // No horizontal padding: the wood band runs to the screen
+                // edges, so the room is the full width of the phone.
+                RoomBoard(game: game)
+                Spacer(minLength: 0)
+                // Docked directly above the controls rather than floating
+                // under the board: the rail then appears in the same place
+                // every time instead of shunting the room up the screen.
                 HintBanner(game: game)
                     .animation(Motion.chrome, value: game.activeHint)
-                Spacer(minLength: 0)
                 footer
             }
             .padding(.top, Layout.s3)
@@ -42,6 +49,7 @@ struct GameView: View {
                 .transition(.opacity)
             }
         }
+        .swipeBackDisabled()
         .navigationBarBackButtonHidden(game.didWin)
         .task(id: game.didWin) {
             guard game.didWin else { return }
@@ -116,9 +124,9 @@ struct GameView: View {
 
 // MARK: - Win
 
-/// The room finishes: a light sweep crosses the floor and the kaki hanko
+/// The room finishes: a light sweep crosses the floor and the vermilion hanko
 /// stamp lands with the time. The only celebration in the app, and the only
-/// time kaki appears outside an error.
+/// time shu appears at full strength.
 private struct WinOverlay: View {
     let game: ShikakuGame
     let wasRecord: Bool
@@ -158,7 +166,7 @@ private struct WinOverlay: View {
             .font(.system(size: 64, weight: .bold))
             .foregroundStyle(Theme.surface)
             .frame(width: 110, height: 110)
-            .background(Theme.kaki, in: RoundedRectangle(cornerRadius: 10))
+            .background(Theme.shu, in: RoundedRectangle(cornerRadius: 10))
             .rotationEffect(.degrees(stamped ? -6 : -20))
             .scaleEffect(stamped ? 1.0 : 1.6)
             .opacity(stamped ? 1 : 0)

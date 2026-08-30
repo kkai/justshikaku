@@ -59,6 +59,12 @@ struct ShikakuApp: App {
                 .environment(cache)
                 .environment(mastery)
                 .tint(Theme.ink)
+                // One committed world. The app is the lacquered room seen from
+                // above, the same view as the icon; a light re-tint of it is a
+                // different app. Theme still carries live light values so the
+                // appearance can return without touching this file's
+                // isolation-critical structure.
+                .preferredColorScheme(.dark)
         }
     }
 }
