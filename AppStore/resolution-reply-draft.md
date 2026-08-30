@@ -1,26 +1,26 @@
-# Resolution Center reply — DRAFT for Kai's review, not yet sent
+# Resolution Center reply: DRAFT for Kai's review, not yet sent
 
-Submission: a85832e4-bf0a-4bc5-b08b-020d14bf15ce (4.3(a) Design — Spam)
+Submission: a85832e4-bf0a-4bc5-b08b-020d14bf15ce (4.3(a) Design, Spam)
 Send via Resolution Center after build 3 is attached.
 
 ---
 
 Thank you for the review. We believe Just Shikaku was grouped with a recent
 cluster of minimal Shikaku apps, and we'd like to explain what
-distinguishes it functionally — and what we have changed in the new build
+distinguishes it functionally, and what we have changed in the new build
 to make that distinction unmistakable.
 
 Just Shikaku is, to our knowledge, the only Shikaku app with a teaching
 curriculum. Concretely:
 
-1. Seven named solving techniques (Prime Strips, Sole Owner, Stranded
-   Cell, …), each with an interactive lesson on a position where that
-   technique is the next move. No other app in the category names its
+1. Seven named solving techniques (Prime Strips, Lone Reacher, No
+   Orphans, Count the Room, and three more), each with an interactive
+   lesson on a position where that technique is the next move. No other app in the category names its
    techniques at all.
 
 2. Hints that argue instead of answering. Help climbs a ladder: a nudge,
    the technique's name, then the full argument drawn on the player's own
-   board — surviving candidates, eliminated ones hatched out, dimension
+   board: surviving candidates, eliminated ones hatched out, dimension
    arrows, the technique lettered above the grid. The final rung applies
    exactly one argued move; the app never auto-solves.
 
@@ -35,7 +35,7 @@ curriculum. Concretely:
 
 5. Mastery verified against the solver: an unhinted correct rectangle is
    credited only when the engine can independently derive it from the
-   position it was played in — progress measures understanding, not speed.
+   position it was played in. Progress measures understanding, not speed.
 
 Since the previous submission we have also rebuilt the app's presentation
 so this is visible in ninety seconds: a new dark visual identity with

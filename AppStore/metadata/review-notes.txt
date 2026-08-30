@@ -21,7 +21,8 @@ build:
   derive it from the position it was played in.
 - Timed practice drills per technique.
 - Every board is machine-verified before play to have exactly one solution
-  AND to be solvable by the taught techniques alone — no guessing anywhere.
+  AND to be solvable by the taught techniques alone, so guessing is never
+  required.
 - A distinct visual identity: dark, opaque, drawn digit glyphs, no themes.
 
 PURCHASE MODEL
@@ -37,6 +38,6 @@ TWO DELIBERATE BEHAVIOURS
 1. Locked sizes/lessons stay tappable and open the purchase sheet rather
    than being disabled, so what exists is visible.
 2. A rectangle whose area disagrees with its number is allowed to commit,
-   marked with a hatched overlay and a have/need count — the free tier's
+   marked with a hatched overlay and a have/need count, because the free tier's
    errors-only hints need mistakes to be possible before they can point
    at them.

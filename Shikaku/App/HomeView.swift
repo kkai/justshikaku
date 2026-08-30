@@ -34,6 +34,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.s5) {
                     Wordmark()
+                    firstRunCard
                     // The path rides directly under the wordmark: the
                     // curriculum is the pitch, and its progress must be the
                     // first thing that visibly moves.
@@ -99,6 +100,44 @@ struct HomeView: View {
         let size = BoardSize(rawValue: saved.sizeRaw)?.label ?? ""
         let tier = Difficulty(rawValue: saved.difficultyRaw)?.label ?? ""
         return "\(size) · \(tier) · \(TimeFormatting.clock(saved.elapsedSeconds))"
+    }
+
+    /// The front door for a brand-new player. The rules entry used to live
+    /// on the tappable board; when that board left, so did the only visible
+    /// way in. This card shows until the first room is solved or the first
+    /// technique is begun, then gets out of the way.
+    @ViewBuilder
+    private var firstRunCard: some View {
+        let untouched = progress.stats.totalSolves == 0
+            && Technique.allCases.allSatisfy { mastery.stage(for: $0) == .unseen }
+        if untouched {
+            Button {
+                Haptics.previewTick()
+                path.append(.learn)
+            } label: {
+                HStack(spacing: Layout.s4) {
+                    Text("学")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(Theme.floor)
+                        .frame(width: 40, height: 40)
+                        .background(Theme.heri)
+                    VStack(alignment: .leading, spacing: Layout.s1) {
+                        Text("New here? Start with the rules")
+                            .font(.headline)
+                            .foregroundStyle(Theme.ink)
+                        Text("Three moves on a tiny board, then the first technique.")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.inkSoft)
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.right")
+                        .foregroundStyle(Theme.inkSoft)
+                }
+                .padding(Layout.s4)
+                .homeCard()
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     /// The Climb's card: one line, the personal best, a way in.

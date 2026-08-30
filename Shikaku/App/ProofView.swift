@@ -208,11 +208,11 @@ struct ReplayView: View {
         let clue = "the \(graded.move.rect.area)"
         switch graded.verdict {
         case .deduced(let technique):
-            return "You worked out \(clue) — \(TechniqueContent.name(for: technique)) gets the credit."
+            return "You worked out \(clue). \(TechniqueContent.name(for: technique)) gets the credit."
         case .shown:
             return "A hint laid \(clue) for you."
         case .leap:
-            return "\(clue.capitalized) was right, but further than the lessons reach. A leap."
+            return "\(clue.capitalized) was right, and it goes further than the lessons reach. That one was a leap."
         }
     }
 

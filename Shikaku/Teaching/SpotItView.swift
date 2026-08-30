@@ -91,7 +91,7 @@ struct SpotItView: View {
         switch feedback {
         case .hit(let credited):
             AnnotationRail(marked: true) {
-                Text("That's it — \(TechniqueContent.name(for: credited)).")
+                Text("That's it. \(TechniqueContent.name(for: credited)) all the way.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.ink)
             }

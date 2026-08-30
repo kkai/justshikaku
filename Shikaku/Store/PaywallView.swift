@@ -103,7 +103,7 @@ struct PaywallView: View {
             // can never be started on top of each other.
             .disabled(entitlements.purchaseState.isBusy)
 
-            Text("Pay once. The room is yours — no ads, ever.")
+            Text("Pay once and the room is yours. There are no ads.")
                 .font(.footnote)
                 .foregroundStyle(Theme.inkSoft)
 

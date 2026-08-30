@@ -1,11 +1,11 @@
 Seven techniques stand between guessing at rectangles and reading a board at a glance. Just Shikaku names them, teaches each one on a real position, and then proves you know them.
 
-Shikaku hands you a grid of numbers. You carve it into rectangles until every number sits in a rectangle of exactly that many cells. Simple to state, and surprisingly deep to play well — the depth is in arguments like Prime Strips, Sole Owner, and Stranded Cell, and those arguments are what this app is actually about.
+Shikaku hands you a grid of numbers. You carve it into rectangles until every number sits in a rectangle of exactly that many cells. The rules take a minute. Playing well takes arguments, ones with names like Prime Strips, Lone Reacher, and No Orphans, and those arguments are what this app is actually about.
 
 WHAT NO OTHER SHIKAKU HAS
 
 - A curriculum. Seven named techniques, each with its own lesson on a board where that technique is the next move.
-- Hints that argue. Ask for help and the reasoning climbs a ladder: a nudge, then the technique's name, then the full argument drawn on your board — the candidates that could work, the ones that die, the cell that decides it. The app can lay the rectangle for you, but that is the ladder's last rung and it applies exactly one argued move. Your solve stays yours.
+- Hints that argue. Ask for help and the reasoning climbs a ladder: a nudge, then the technique's name, then the full argument drawn on your board: the candidates that could work, the ones that die, the cell that decides it. The app can lay the rectangle for you, but that is the ladder's last rung and it applies exactly one argued move. Your solve stays yours.
 - A daily that teaches. Every player in the world gets the same room, and each day's room is built around one named technique. Solve it and your streak grows; solve it unaided and that technique's mastery grows with it.
 - Proof behind every board. Before a puzzle reaches you, the engine has verified it has exactly one solution and that the taught techniques are enough to reach it. Guessing is never required, on any board, at any difficulty.
 - Mastery you earn by understanding. Each correct rectangle you lay without help is checked against the solver's own derivation, and the hardest technique in that reasoning gets the credit. Seven seals fill as you learn; speed is never the score.

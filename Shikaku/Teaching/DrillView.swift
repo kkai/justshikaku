@@ -77,7 +77,7 @@ struct DrillView: View {
     private var doneRail: some View {
         AnnotationRail {
             HStack(alignment: .firstTextBaseline, spacing: Layout.s3) {
-                Text("Drilled. \(TimeFormatting.clock(seconds)), no help.")
+                Text("Drilled in \(TimeFormatting.clock(seconds)) without a hint.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.ink)
                 Spacer()

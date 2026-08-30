@@ -150,7 +150,7 @@ struct StatsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Solve counts, hint trend, mastery path")
                             .foregroundStyle(Theme.ink)
-                        Text("Comes with the full game. Your progress is already being tracked, so nothing is lost.")
+                        Text("Comes with the full game. The app is tracking your progress either way, so nothing is lost.")
                             .font(.subheadline)
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
