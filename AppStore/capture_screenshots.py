@@ -320,7 +320,12 @@ def enter_game_with_readable_board(sim, attempts=6):
             if back:
                 sim.tap(back, wait=1.5)
             continue
-        sim.tap(play, wait=3.0)
+        sim.tap(play, wait=1.5)
+        # The button now opens the size/difficulty sheet; its own primary
+        # button carries the same label and starts the game.
+        confirm = sim.find("Lay out a room")
+        if confirm:
+            sim.tap(confirm, wait=3.0)
         ones = [p for v, p in sim.clue_elements() if v == 1]
         if not ones:
             back = sim.find("Back")
@@ -389,22 +394,37 @@ def game_flow(sim, out_dir, appearance):
 
 
 def learn_flow(sim, out_dir, appearance):
-    """Learn menu shot, then the Prime Strips lesson with its argument."""
-    learn = sim.find("Learn")
-    if not learn:
+    """The Prime Strips lesson (entered through its seal on Home) with its
+    argument drawn, then today's room."""
+    seal = sim.find("Prime Strips lesson")
+    if not seal:
         return False
-    sim.tap(learn, wait=2.0)
-    sim.shot(os.path.join(out_dir, f"{appearance}-05-learn.png"))
-
-    lesson = sim.find("Prime Strips")
-    if not lesson:
-        return False
-    sim.tap(lesson, wait=2.0)
+    sim.tap(seal, wait=2.0)
     show = sim.find("Show me")
     if not show:
         return False
     sim.tap(show, wait=2.2)                  # the argument draws itself
     sim.shot(os.path.join(out_dir, f"{appearance}-04-lesson.png"))
+    back = sim.find("Back")
+    if back:
+        sim.tap(back, wait=1.5)
+
+    card = sim.tree()
+    target = None
+    for el in card:
+        label = el.get("AXLabel") or ""
+        if label.startswith("Today needs") or label.startswith("Today's room"):
+            f = el.get("frame") or {}
+            target = (f.get("x", 0) + f.get("width", 0) / 2,
+                      f.get("y", 0) + f.get("height", 0) / 2)
+            break
+    if not target:
+        return True                          # lesson shot already succeeded
+    sim.tap(target, wait=7.0)                # generation runs behind loading
+    sim.shot(os.path.join(out_dir, f"{appearance}-05-daily.png"))
+    back = sim.find("Back")
+    if back:
+        sim.tap(back, wait=1.5)
     return True
 
 
@@ -413,7 +433,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     sim = Sim(UDID)
 
-    for appearance in ("light", "dark"):
+    for appearance in ("dark",):
         sim.appearance(appearance)
         sim.fresh_install()
         sim.launch()
@@ -439,9 +459,9 @@ def main():
         failures += 0 if good else 1
         print(f"  {'OK ' if good else f'WRONG SIZE {size}'} {name}")
     expected_names = {f"{a}-{n:02d}-{s}.png"
-                      for a in ("light", "dark")
+                      for a in ("dark",)
                       for n, s in [(1, "hint"), (2, "game"), (3, "home"),
-                                   (4, "lesson"), (5, "learn"), (6, "win")]}
+                                   (4, "lesson"), (5, "daily"), (6, "win")]}
     missing = expected_names - set(os.listdir(out_dir))
     for name in sorted(missing):
         print(f"  MISSING {name}", file=sys.stderr)

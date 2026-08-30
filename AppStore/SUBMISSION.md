@@ -1,7 +1,27 @@
 # Just Shikaku — App Store submission runbook
 
-State as of 2026-08-14: everything is prepared and in App Store Connect on
-build 1; the version sits in `PREPARE_FOR_SUBMISSION`. **The final steps are yours and they are in §1.**
+State as of 2026-08-30: iOS 1.0 was **rejected under 4.3(a) (Design — Spam)**
+on 2026-08-28; the version is `REJECTED` and therefore editable — the
+recovery ships as 1.0 **build 3**, no version bump. The full response (the
+Lacquered Room redesign, the curriculum daily, mastery/drills/stats made
+real, the rewritten listing) is on `main`; the plan lives in
+`~/.claude/plans/go-over-it-vast-walrus.md`.
+
+## 0. Resubmission checklist (2026-08-30)
+
+- [x] App rebuilt: dark identity, curriculum daily, drills, mastery, stats
+- [x] Listing rewritten from a blank page (`metadata/*` — push via asc.py)
+- [x] Screenshots re-captured dark (`screenshots/iphone-65/dark-*`)
+- [x] Resolution Center reply drafted: `resolution-reply-draft.md` —
+      **Kai reviews and sends; never sent automatically**
+- [ ] Archive + upload build 3, attach to the version
+- [ ] Push new metadata (description/subtitle/keywords/promo/review notes)
+- [ ] Update the IAP display copy in ASC web UI ("The Whole Room")
+- [ ] Kai: App Privacy answer (if still pending), IAP into the review
+      submission, send the reply, Add for Review
+
+State as of 2026-08-14 (previous submission): everything was prepared in App
+Store Connect on build 2; the version sat in `PREPARE_FOR_SUBMISSION`.
 
 ## App record facts (matter for every future release)
 
