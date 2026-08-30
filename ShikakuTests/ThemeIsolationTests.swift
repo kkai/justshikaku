@@ -34,7 +34,7 @@ private nonisolated func nonisolatedThemeFonts() -> [Font] {
 
 private nonisolated func nonisolatedMotionTokens() -> [Animation] {
     [Motion.settle, Motion.snapLine, Motion.matReject,
-     Motion.argumentBeat, Motion.winSweep, Motion.chrome]
+     Motion.argumentBeat, Motion.winSweep, Motion.chrome, Motion.stringSnap]
 }
 
 /// Marks the main queue so the runtime guard can prove it ran off it.
@@ -59,7 +59,7 @@ private nonisolated func rgba(_ color: UIColor) -> [CGFloat] {
     @Test func designTokensAreReachableFromANonisolatedContext() {
         #expect(nonisolatedThemeColors().count == 12)
         #expect(nonisolatedThemeFonts().count == 5)
-        #expect(nonisolatedMotionTokens().count == 6)
+        #expect(nonisolatedMotionTokens().count == 7)
         #expect(Motion.argumentStagger > 0)
     }
 

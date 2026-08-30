@@ -17,11 +17,14 @@ import SwiftUI
 struct ArgumentOverlay: View {
     let hint: Hint
     let geo: BoardGeometry
+    /// For the dimension arrows' origin — the protagonist clue's own cell.
+    var puzzle: Puzzle? = nil
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             if hint.showsArgument, let step = hint.step {
-                ArgumentBody(step: step, geo: geo)
+                ArgumentBody(step: step, geo: geo, puzzle: puzzle)
+                TechniqueLettering(technique: step.technique, geo: geo)
             }
             if hint.isError {
                 ErrorMarks(hint: hint, geo: geo)
@@ -29,6 +32,72 @@ struct ArgumentOverlay: View {
             FocusMarks(cells: hint.focusCells, geo: geo)
         }
         .allowsHitTesting(false)
+    }
+}
+
+/// The technique's name, lettered on the plan like a drawing annotation —
+/// spaced capitals in the band above the lattice, never a floating card.
+private struct TechniqueLettering: View {
+    let technique: Technique
+    let geo: BoardGeometry
+
+    var body: some View {
+        Text(TechniqueContent.name(for: technique).uppercased())
+            .font(.system(size: 11, weight: .semibold))
+            .kerning(2)
+            .foregroundStyle(Theme.shu)
+            .position(x: geo.boardRect.midX, y: geo.boardRect.minY - 12)
+            .transition(.opacity)
+            .accessibilityHidden(true)   // the hint banner reads the name out
+    }
+}
+
+/// A dimension-drawing arrow: shaft with perpendicular end ticks, from the
+/// protagonist clue to each claimed cell — the *reach* argument drawn the
+/// way a plan dimensions a span.
+private struct DimensionArrows: View {
+    let step: SolverStep
+    let geo: BoardGeometry
+    let puzzle: Puzzle?
+
+    var body: some View {
+        if let puzzle,
+           let clueIndex = step.explanation.clueIndices.first,
+           puzzle.clues.indices.contains(clueIndex),
+           step.technique == .mustCover || step.technique == .soleOwner {
+            let origin: CGPoint = geo.center(for: puzzle.clues[clueIndex].cell)
+            ForEach(Array(step.explanation.claimedCells.prefix(4).enumerated()),
+                    id: \.offset) { _, cell in
+                if cell != puzzle.clues[clueIndex].cell {
+                    let target: CGPoint = geo.center(for: cell)
+                    DimensionArrowShape(from: origin, to: target,
+                                        tick: max(geo.cellSize * 0.14, 4))
+                        .stroke(Theme.shu, style: StrokeStyle(lineWidth: 1.5, lineCap: .square))
+                        .transition(.opacity)
+                }
+            }
+        }
+    }
+}
+
+private nonisolated struct DimensionArrowShape: Shape {
+    let from: CGPoint
+    let to: CGPoint
+    let tick: CGFloat
+
+    func path(in _: CGRect) -> Path {
+        var path = Path()
+        path.move(to: from)
+        path.addLine(to: to)
+        // Perpendicular ticks at both ends.
+        let dx = to.x - from.x, dy = to.y - from.y
+        let len = max(sqrt(dx * dx + dy * dy), 0.001)
+        let px = -dy / len * tick, py = dx / len * tick
+        for end in [from, to] {
+            path.move(to: CGPoint(x: end.x - px, y: end.y - py))
+            path.addLine(to: CGPoint(x: end.x + px, y: end.y + py))
+        }
+        return path
     }
 }
 
@@ -76,6 +145,7 @@ private struct ErrorMarks: View {
 private struct ArgumentBody: View {
     let step: SolverStep
     let geo: BoardGeometry
+    var puzzle: Puzzle? = nil
 
     @State private var stage = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -85,6 +155,7 @@ private struct ArgumentBody: View {
             candidateGhosts
             if stage >= 1 { eliminationStrikes }
             if stage >= 2 { claimBurnIn }
+            if stage >= 2 { DimensionArrows(step: step, geo: geo, puzzle: puzzle) }
             if step.technique == .corridorCount, let region = step.explanation.region {
                 RegionWash(region: region, geo: geo)
             }

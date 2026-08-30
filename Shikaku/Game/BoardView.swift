@@ -28,7 +28,7 @@ struct BoardView: View {
                 CluesLayer(game: game, geo: geo)
                 PreviewLayer(game: game, geo: geo)
                 if let hint = game.activeHint {
-                    ArgumentOverlay(hint: hint, geo: geo)
+                    ArgumentOverlay(hint: hint, geo: geo, puzzle: game.puzzle)
                 }
             }
             .contentShape(Rectangle().inset(by: -touchOutset))
@@ -131,6 +131,9 @@ private struct MatView: View {
     let geo: BoardGeometry
 
     @State private var settled = false
+    /// One beat of vermilion on the edge as the mat lands — the snap of the
+    /// sumitsubo line. Decays to the heri band under Motion.stringSnap.
+    @State private var snapping = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(ProgressStore.self) private var progress
 
@@ -159,6 +162,7 @@ private struct MatView: View {
         .shadow(color: .black.opacity(settled || reduceMotion ? 0 : 0.18), radius: 6, y: 2)
         .onAppear {
             withAnimation(reduceMotion ? nil : Motion.settle) { settled = true }
+            withAnimation(reduceMotion ? nil : Motion.stringSnap) { snapping = false }
         }
         .accessibilityElement()
         .accessibilityLabel(matAccessibilityLabel(conflict: conflict))
@@ -174,7 +178,8 @@ private struct MatView: View {
             .overlay(matInnerShadow)
             .overlay(
                 Rectangle()
-                    .strokeBorder(Theme.heri, lineWidth: 1.5)
+                    .strokeBorder(snapping && !reduceMotion ? Theme.shu : Theme.heri,
+                                  lineWidth: 1.5)
             )
             // A mat whose area does not match its clue is hatched over rather
             // than outlined in red: eliminations are drawn in this app. The
@@ -204,10 +209,10 @@ private struct MatView: View {
 
     private var conflictBadge: some View {
         let need: Int = game.puzzle.clues[placed.clueIndex].value
-        return Text("\(placed.rect.area)/\(need)")
-            .font(Theme.numberFont(size: geo.badgeSize * 0.8))
-            .foregroundStyle(Theme.ink)
+        return NumeralFraction(have: placed.rect.area, need: need,
+                               size: geo.badgeSize * 0.8)
             .padding(.horizontal, 3)
+            .padding(.vertical, 2)
             .background(Theme.floor.opacity(0.92), in: Rectangle())
     }
 
@@ -294,12 +299,10 @@ private struct ClueNumeral: View {
 
     var body: some View {
         let center: CGPoint = geo.center(for: clue.cell)
-        Text("\(clue.value)")
-            .font(isSatisfied ? Theme.satisfiedClueFont(size: geo.clueSize)
-                              : Theme.clueFont(size: geo.clueSize))
-            .foregroundStyle(Theme.ink)
+        Numeral(value: clue.value, size: geo.clueSize, relaxed: isSatisfied)
             .position(center)
             .animation(Motion.chrome, value: isSatisfied)
+            .accessibilityElement()
             .accessibilityLabel("Clue \(clue.value)\(isSatisfied ? ", housed" : "")")
     }
 }
@@ -357,11 +360,10 @@ private struct SnapLineView: View {
         if let clueIndex = preview.clueIndex {
             let need: Int = game.puzzle.clues[clueIndex].value
             let have: Int = preview.rect.area
-            Text("\(have)/\(need)")
-                .font(Theme.numberFont(size: geo.badgeSize))
-                .foregroundStyle(have == need ? Theme.heri : Theme.ink)
+            NumeralFraction(have: have, need: need, size: geo.badgeSize,
+                            color: have == need ? Theme.heri : Theme.ink)
                 .padding(.horizontal, 4)
-                .padding(.vertical, 1)
+                .padding(.vertical, 2)
                 .background(Theme.floor.opacity(0.92), in: Rectangle())
                 .position(x: frame.midX, y: frame.minY - geo.badgeSize)
         }

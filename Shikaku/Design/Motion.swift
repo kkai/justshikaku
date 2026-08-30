@@ -28,4 +28,8 @@ nonisolated enum Motion {
 
     /// Chrome transitions (sheets, banner slides).
     static let chrome = Animation.easeInOut(duration: 0.22)
+
+    /// The sumitsubo snap: the one-beat vermilion flash on a mat's edge as it
+    /// commits — a carpenter's line released, not a gentle tick.
+    static let stringSnap = Animation.easeOut(duration: 0.4)
 }
