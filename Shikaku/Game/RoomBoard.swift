@@ -18,7 +18,12 @@ struct RoomBoard: View {
     private let band: CGFloat = 14
 
     var body: some View {
-        BoardView(game: game)
+        // The band is part of the board's touch surface: a drag that starts
+        // on the timber clamps into the border row or column (BoardGeometry
+        // .clampedCell). Border cells are the category's sore spot — the top
+        // competitor's one critical review is "8–10 attempts to select" them —
+        // so the wood is deliberately forgiving, not dead.
+        BoardView(game: game, touchOutset: band)
             // The lattice needs its own opaque ground: without it the timber
             // fill behind the whole padded stack shows through the board and
             // the room reads as one flat brown square.

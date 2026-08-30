@@ -28,6 +28,11 @@ struct HomeView: View {
     @State private var size: BoardSize = .five
     @State private var difficulty: Difficulty = .gentle
     @State private var showingNewRoom = false
+    /// The launch lay-in: how many of the room's mats are on the floor.
+    /// Grows one beat at a time in `layInRoom`; MatView's own settle
+    /// animation fires for each mat as it joins the prefix.
+    @State private var laidMats: Int?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -52,7 +57,7 @@ struct HomeView: View {
                 .padding(.bottom, Layout.s4)
             }
         }
-        .toolbar { toolbarItems }
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showingNewRoom) {
             NewRoomSheet(size: $size, difficulty: $difficulty, onStart: start)
         }
@@ -66,15 +71,34 @@ struct HomeView: View {
     /// one built object rather than a page with a title on it.
     private var lintel: some View {
         HStack(spacing: Layout.s3) {
-            ShikakuMark(side: 32)
+            ShikakuMark(side: 30)
+            // Expanded width + a cut shadow: carved into the timber, not
+            // typeset on it. Placeholder voice until the engraved glyph set
+            // exists (plan Part E) — but no longer a default largeTitle.
             Text("Just Shikaku")
-                .font(Theme.title)
+                .font(.system(size: 28, weight: .bold))
+                .fontWidth(.expanded)
                 .foregroundStyle(Theme.ink)
                 .shadow(color: .black.opacity(0.55), radius: 0, y: 1)
-            Spacer(minLength: 0)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: Layout.s3)
+            // Stats and Settings live in the lintel — same timber, not a
+            // navigation bar floating detached above it.
+            Button { path.append(.stats) } label: {
+                Image(systemName: "chart.bar")
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .accessibilityLabel("Statistics")
+            Button { path.append(.settings) } label: {
+                Image(systemName: "gearshape")
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .accessibilityLabel("Settings")
         }
+        .foregroundStyle(Theme.inkSoft)
         .padding(.horizontal, Layout.s5)
-        .padding(.vertical, Layout.s4)
+        .padding(.vertical, Layout.s2)
         .frame(maxWidth: .infinity)
         .background(Theme.frame)
         .overlay(alignment: .bottom) {
@@ -91,45 +115,83 @@ struct HomeView: View {
     /// a first run it shows a laid demo room and points at the rules instead.
     private var liveRoom: some View {
         Button {
+            Haptics.previewTick()
             if progress.savedGame != nil {
                 path.append(.resume)
             } else {
                 path.append(.learn)
             }
         } label: {
-            RoomBoard(game: roomGame)
+            RoomBoard(game: stagedRoomGame)
                 .allowsHitTesting(false)
                 .frame(maxWidth: 340)
         }
         .buttonStyle(.plain)
+        .task(id: fullRoomBoard.placed.count) { await layInRoom() }
         .accessibilityLabel(progress.savedGame != nil
                             ? "Continue your room, \(savedLabel)"
                             : "Learn the rules")
     }
 
     private var roomCaption: some View {
-        Text(progress.savedGame != nil ? savedLabel : "Learn the rules first.")
-            .font(progress.savedGame != nil ? Theme.numberFont(size: 13) : .subheadline)
-            .foregroundStyle(Theme.inkSoft)
-            .padding(.top, Layout.s3)
+        // A verb, not a caption: the room is the way in, so the line under it
+        // says what tapping it does.
+        Group {
+            if progress.savedGame != nil {
+                Text("Continue — \(savedLabel)")
+                    .font(Theme.numberFont(size: 13))
+            } else {
+                Text("Tap the room to learn the rules")
+                    .font(.subheadline)
+            }
+        }
+        .foregroundStyle(Theme.inkSoft)
+        .padding(.top, Layout.s3)
     }
 
-    /// The saved board when there is one, otherwise a laid demo room. Held in
-    /// a computed property rather than `@State` so a save made on the play
-    /// screen is reflected the moment the player comes back.
-    private var roomGame: ShikakuGame {
+    /// The room's full contents: the saved board when there is one, otherwise
+    /// a laid demo room. Computed rather than `@State` so a save made on the
+    /// play screen is reflected the moment the player comes back.
+    private var fullRoom: (puzzle: Puzzle, size: BoardSize, difficulty: Difficulty, board: BoardState) {
         if let saved = progress.savedGame {
-            return ShikakuGame(
-                puzzle: saved.puzzle,
-                size: BoardSize(rawValue: saved.sizeRaw) ?? .five,
-                difficulty: Difficulty(rawValue: saved.difficultyRaw) ?? .gentle,
-                board: saved.board)
+            return (saved.puzzle,
+                    BoardSize(rawValue: saved.sizeRaw) ?? .five,
+                    Difficulty(rawValue: saved.difficultyRaw) ?? .gentle,
+                    saved.board)
         }
-        // A real lesson position: a 7×7 with two mats already laid, so a
-        // first run still sees a room with something in it.
+        // A real lesson position: a 7×7 with mats already laid, so a first
+        // run still sees a room with something in it.
         let demo = TutorialPuzzles.lesson(for: .corridorCount)
-        return ShikakuGame(puzzle: demo.puzzle, size: .seven, difficulty: .gentle,
-                           board: demo.startingBoard)
+        return (demo.puzzle, .seven, .gentle, demo.startingBoard)
+    }
+
+    private var fullRoomBoard: BoardState { fullRoom.board }
+
+    /// The room mid-lay-in: the first `laidMats` mats of the full board.
+    /// `PlacedRect` identity is stable across prefixes, so MatView keeps its
+    /// state for mats already down and animates only the newcomer.
+    private var stagedRoomGame: ShikakuGame {
+        let room = fullRoom
+        let placed = laidMats.map { Array(room.board.placed.prefix($0)) } ?? room.board.placed
+        return ShikakuGame(puzzle: room.puzzle, size: room.size, difficulty: room.difficulty,
+                           board: BoardState(placed: placed, claims: room.board.claims))
+    }
+
+    /// The launch moment: the room lays itself out, one mat per beat. Under
+    /// Reduce Motion (or a re-run with nothing new) the final state renders
+    /// directly — the animation is the greeting, never information.
+    private func layInRoom() async {
+        let total = fullRoomBoard.placed.count
+        guard !reduceMotion, total > 0, laidMats == nil else {
+            laidMats = total
+            return
+        }
+        laidMats = 0
+        for beat in 1...total {
+            try? await Task.sleep(for: .milliseconds(280))
+            guard !Task.isCancelled else { return }
+            laidMats = beat
+        }
     }
 
     private var savedLabel: String {
@@ -163,22 +225,4 @@ struct HomeView: View {
         cache.warm(size: choice.size, tier: choice.difficulty)
     }
 
-    @ToolbarContentBuilder
-    private var toolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            HStack(spacing: Layout.s2) {
-                Button { path.append(.stats) } label: {
-                    Image(systemName: "chart.bar")
-                        .frame(minWidth: 44, minHeight: 44)
-                }
-                .accessibilityLabel("Statistics")
-                Button { path.append(.settings) } label: {
-                    Image(systemName: "gearshape")
-                        .frame(minWidth: 44, minHeight: 44)
-                }
-                .accessibilityLabel("Settings")
-            }
-            .foregroundStyle(Theme.inkSoft)
-        }
-    }
 }

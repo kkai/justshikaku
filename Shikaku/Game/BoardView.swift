@@ -13,6 +13,11 @@ import SwiftUI
 
 struct BoardView: View {
     let game: ShikakuGame
+    /// How far beyond the lattice touches still count, in points. RoomBoard
+    /// sets this to its timber band so a drag that starts on the wood clamps
+    /// into the border row/column instead of dying — border cells are the
+    /// category's sore spot, and the frame is forgiving, not dead.
+    var touchOutset: CGFloat = 0
 
     var body: some View {
         GeometryReader { proxy in
@@ -26,7 +31,7 @@ struct BoardView: View {
                     ArgumentOverlay(hint: hint, geo: geo)
                 }
             }
-            .contentShape(Rectangle())
+            .contentShape(Rectangle().inset(by: -touchOutset))
             .gesture(dragGesture(geo: geo))
         }
         .aspectRatio(1, contentMode: .fit)

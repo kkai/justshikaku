@@ -31,7 +31,8 @@ struct TechniquePath: View {
             }
             HStack(spacing: Layout.s2) {
                 ForEach(Technique.allCases) { technique in
-                    HankoSeal(stage: mastery.stage(for: technique), side: seal)
+                    HankoSeal(stage: mastery.stage(for: technique),
+                              station: technique.rawValue + 1, side: seal)
                 }
                 Spacer(minLength: 0)
             }
@@ -44,14 +45,23 @@ struct TechniquePath: View {
 /// One technique's seal.
 nonisolated struct HankoSeal: View {
     let stage: MasteryTracker.Stage
+    /// The technique's position on the path, 1-based. Engraved faintly on an
+    /// uncut stone so the row reads as seven stations, not seven placeholders.
+    var station: Int = 0
     var side: CGFloat = 34
 
     var body: some View {
         Rectangle()
             .fill(fill)
             .overlay(Rectangle().strokeBorder(border, lineWidth: stage == .unseen ? 1 : 1.5))
-            .overlay { if stage == .learned { glyph } }
+            .overlay { if stage == .learned { glyph } else if station > 0 { stationNumber } }
             .frame(width: side, height: side)
+    }
+
+    private var stationNumber: some View {
+        Text("\(station)")
+            .font(Theme.numberFont(size: side * 0.38))
+            .foregroundStyle(stage == .unseen ? Theme.inkSoft.opacity(0.5) : Theme.ink)
     }
 
     /// A cut seal carries a mark; an uncut stone is blank. The mark is the

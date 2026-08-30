@@ -31,6 +31,7 @@ struct NewRoomSheet: View {
                 difficultyPicker
                 Spacer(minLength: 0)
                 Button("Lay out a room") {
+                    Haptics.matSettle()
                     dismiss()
                     onStart()
                 }

@@ -10,25 +10,29 @@ import SwiftUI
 /// never the layout it sits in.
 nonisolated struct ShikakuMark: View {
     var side: CGFloat
-    var line: CGFloat = 1.5
+    var line: CGFloat = 2
 
     var body: some View {
         let u = side / 3
+        // An outer border with two interior cuts — one vertical at 1/3, one
+        // horizontal across the right column — and the bottom-right 2×2 laid.
+        // Reads as a partitioned room rather than a sidebar glyph: the cuts
+        // are lines through a frame, not three separate boxes.
         ZStack(alignment: .topLeading) {
-            // A 1×3 strip down the left.
-            Rectangle()
-                .strokeBorder(Theme.ink, lineWidth: line)
-                .frame(width: u, height: side)
-            // A 2×1 across the top right.
-            Rectangle()
-                .strokeBorder(Theme.ink, lineWidth: line)
-                .frame(width: u * 2, height: u)
-                .offset(x: u)
-            // The laid mat: the one rectangle that is finished.
             Rectangle()
                 .fill(Theme.ink)
-                .frame(width: u * 2, height: u * 2)
-                .offset(x: u, y: u)
+                .frame(width: u * 2 + line / 2, height: u * 2 + line / 2)
+                .offset(x: u - line / 4, y: u - line / 4)
+            Rectangle()
+                .strokeBorder(Theme.ink, lineWidth: line)
+            Rectangle()
+                .fill(Theme.ink)
+                .frame(width: line, height: side)
+                .offset(x: u - line / 2)
+            Rectangle()
+                .fill(Theme.ink)
+                .frame(width: side - u, height: line)
+                .offset(x: u, y: u - line / 2)
         }
         .frame(width: side, height: side)
         .accessibilityHidden(true)
