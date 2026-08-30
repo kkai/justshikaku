@@ -399,7 +399,11 @@ def learn_flow(sim, out_dir, appearance):
     seal = sim.find("Prime Strips lesson")
     if not seal:
         return False
-    sim.tap(seal, wait=2.0)
+    sim.tap(seal, wait=1.5)
+    # The seal now opens a three-door dialog; the lesson is the first door.
+    lesson = sim.find("The lesson")
+    if lesson:
+        sim.tap(lesson, wait=2.0)
     show = sim.find("Show me")
     if not show:
         return False
