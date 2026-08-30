@@ -95,31 +95,13 @@ final class EntitlementStore {
     private(set) var product: Product?
     var purchaseState: PurchaseState = .idle
 
-    /// True when this build is a paid-up-front Pro SKU that skips StoreKit
-    /// entirely.
-    ///
-    /// Unused in v1 — Shikaku ships a single free-with-unlock target and no
-    /// SHIKAKU_PRO flag is defined anywhere. The pattern is ported from
-    /// Numeriqo (NUMERIQO_PRO) so a Pro target added later gets the guards in
-    /// init/refresh for free instead of retrofitting them.
-    /// `nonisolated`: it reads a compile flag and nothing else, so it is
-    /// usable from tests without hopping to the actor.
-    nonisolated static var isUnlockedByBuild: Bool {
-        #if SHIKAKU_PRO
-        true
-        #else
-        false
-        #endif
-    }
-
     init(userDefaults: UserDefaults = .standard,
          source: EntitlementSource = StoreKitEntitlementSource()) {
         self.defaults = userDefaults
         self.source = source
         // Synchronous, so the very first frame is already right.
-        self.isUnlocked = Self.isUnlockedByBuild || userDefaults.bool(forKey: Key.unlocked)
+        self.isUnlocked = userDefaults.bool(forKey: Key.unlocked)
 
-        guard !Self.isUnlockedByBuild else { return }
 
         // Started here rather than in a view's .task: the listener has to be
         // live before any transaction can complete, and view lifecycle is not a
@@ -136,7 +118,6 @@ final class EntitlementStore {
     /// Re-reads ownership from StoreKit. A `nil` answer leaves the cached value
     /// untouched — see `Key.unlocked`.
     func refresh() async {
-        guard !Self.isUnlockedByBuild else { return }
         guard let owned = await source.isOwned(StoreProduct.fullUnlock) else { return }
         isUnlocked = owned
         defaults.set(owned, forKey: Key.unlocked)

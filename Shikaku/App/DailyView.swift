@@ -86,6 +86,7 @@ struct DailyCard: View {
 struct DailyHostView: View {
     let day: DayKey
 
+    @Environment(MasteryTracker.self) private var mastery
     @State private var game: ShikakuGame?
 
     var body: some View {
@@ -103,8 +104,10 @@ struct DailyHostView: View {
                 DailySeed.generate(for: day)
             }.value
             let plan = DailySeed.spec(for: day)
-            game = ShikakuGame(puzzle: result.puzzle, size: plan.size,
-                               difficulty: plan.difficulty, dailyDay: day)
+            let fresh = ShikakuGame(puzzle: result.puzzle, size: plan.size,
+                                    difficulty: plan.difficulty, dailyDay: day)
+            fresh.mastery = mastery
+            game = fresh
         }
     }
 }

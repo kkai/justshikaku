@@ -82,3 +82,42 @@ import Testing
         #expect(store.daily.lastCompleted == today)
     }
 }
+
+@Suite @MainActor struct MasteryWiringTests {
+
+    /// The regression that made mastery dead code: the credit path must run
+    /// from a real commit, advance to .learned after 5 unaided placements,
+    /// and never fire for hint-applied ones.
+    @Test func unaidedCommitsAdvanceMasteryAndHintedOnesDoNot() {
+        let defaults = UserDefaults(suiteName: "mastery-tests-\(UUID().uuidString)")!
+        let store = ProgressStore(userDefaults: defaults)
+        let tracker = MasteryTracker(store: store)
+
+        for round in 0..<6 {
+            let lesson = TutorialPuzzles.lesson(for: .primeStrip)
+            let game = ShikakuGame(puzzle: lesson.puzzle, size: .five,
+                                   difficulty: .gentle, board: lesson.startingBoard)
+            game.mastery = tracker
+            // Drive the real input path: drag out the solver's own solution
+            // for every clue, so each commit is correct and derivable.
+            for (index, rect) in lesson.puzzle.solution.enumerated() {
+                if round == 5 {
+                    // The hinted round: applied placements must not credit.
+                    game.applyHintPlacement(Placement(clueIndex: index, rect: rect))
+                } else {
+                    game.dragChanged(anchor: Cell(row: rect.minRow, col: rect.minCol),
+                                     current: Cell(row: rect.maxRow, col: rect.maxCol))
+                    game.dragEnded()
+                }
+            }
+            #expect(game.didWin)
+        }
+
+        // Five clean boards of this two-clue puzzle = at least 5 unaided
+        // credits on some technique; primeStrip's lesson credits primeStrip.
+        #expect(tracker.stage(for: .primeStrip) == .learned)
+        let before = store.mastery.perTechnique.values.reduce(0) { $0 + $1.unaided }
+        // The all-hints round contributed nothing unaided.
+        #expect(before <= 5 * TutorialPuzzles.lesson(for: .primeStrip).puzzle.clues.count)
+    }
+}

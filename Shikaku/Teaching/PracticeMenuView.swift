@@ -28,7 +28,7 @@ struct PracticeMenuView: View {
         let seen = mastery.stage(for: technique) > .unseen
         if seen {
             NavigationLink {
-                LessonView(technique: technique)
+                DrillView(technique: technique)
             } label: {
                 label(for: technique, hint: nil)
             }

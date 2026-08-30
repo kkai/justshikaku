@@ -118,6 +118,35 @@ nonisolated enum LogicalSolver {
         return SolveResult(solved: true, trace: trace, steps: trace.count)
     }
 
+    /// The techniques in the deduction that reaches a placement for
+    /// `clueIndex` from `state` — the mastery tracker's evidence that an
+    /// unaided placement was actually derivable, and by what.
+    ///
+    /// Runs the normal lowest-technique-first loop, collecting only the steps
+    /// that bear on the target (eliminations of the target's candidates, and
+    /// the placement itself); steps that merely place *other* clues on the
+    /// way are bookkeeping for the state, not part of this argument, and
+    /// crediting them would inflate mastery. Returns nil when the solver
+    /// cannot reach the placement — the player out-reasoned the curriculum
+    /// (or guessed), and neither earns a seal.
+    static func chain(toPlace clueIndex: Int, puzzle: Puzzle,
+                      state initial: SolverState, maxSteps: Int = 96) -> [Technique]? {
+        var state = initial
+        guard state.placed[clueIndex] == nil else { return nil }
+        var techniques: [Technique] = []
+        for _ in 0..<maxSteps {
+            guard let step = nextStep(puzzle: puzzle, state: state) else { return nil }
+            let bearsOnTarget = step.placement?.clueIndex == clueIndex
+                || step.eliminations.contains { $0.clueIndex == clueIndex }
+            if bearsOnTarget { techniques.append(step.technique) }
+            state.apply(step: step)
+            if state.placed[clueIndex] != nil {
+                return techniques.isEmpty ? nil : techniques
+            }
+        }
+        return nil
+    }
+
     // MARK: - Detectors
 
     private static func detect(_ technique: Technique, puzzle: Puzzle,

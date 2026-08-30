@@ -63,6 +63,14 @@ final class ShikakuGame {
     /// Set for one animation beat when a drag is rejected.
     private(set) var rejectedPreview: GridRect?
 
+    /// The mastery tracker, injected by the hosting view (services come via
+    /// @Environment and views hand them down; the game never looks one up).
+    /// nil in lessons and previews, where no credit should accrue.
+    var mastery: MasteryTracker?
+    /// Set for the duration of a hint-applied placement, so applied moves
+    /// can never claim unaided credit.
+    private var applyingHint = false
+
     /// The live hint, if the player asked for one. Lives here rather than in
     /// a view because the board's ArgumentOverlay draws it against
     /// BoardGeometry. Any committed mat dismisses it — the board moved on.
@@ -160,6 +168,8 @@ final class ShikakuGame {
     var canUndo: Bool { !undoStack.isEmpty }
 
     private func commit(_ placed: PlacedRect) {
+        // The deduction is judged against the board BEFORE this mat lands.
+        let priorBoard = board
         // Redraw-over: mats the new one overlaps come off first. A second mat
         // for the same clue also replaces the old one.
         let displaced = board.placed.filter {
@@ -174,7 +184,23 @@ final class ShikakuGame {
         undoStack.append(.commit(added: placed, removed: displaced))
         activeHint = nil
         Haptics.matSettle()
+        creditIfDeduced(placed, priorBoard: priorBoard)
         if isSolved { finishIfSolved() }
+    }
+
+    /// The unaided-mastery contract, finally wired: a correct placement the
+    /// player laid without a hint, which the solver can independently derive
+    /// from the position it was laid in, credits the hardest technique in
+    /// that derivation. `creditedClues` survives undo (anti-farming), and
+    /// hint-applied placements are excluded at the source.
+    private func creditIfDeduced(_ placed: PlacedRect, priorBoard: BoardState) {
+        guard let mastery, !applyingHint else { return }
+        guard !areaConflict(placed), !isWrong(placed) else { return }
+        guard claimMasteryCredit(forClue: placed.clueIndex) else { return }
+        let state = SolverState(puzzle: puzzle, board: priorBoard)
+        guard let chain = LogicalSolver.chain(
+            toPlace: placed.clueIndex, puzzle: puzzle, state: state) else { return }
+        mastery.recordUnaidedPlacement(chain: chain)
     }
 
     private func remove(_ placed: PlacedRect) {
@@ -196,6 +222,11 @@ final class ShikakuGame {
     }
 
     func applyHintPlacement(_ placement: Placement) {
+        applyingHint = true
+        defer { applyingHint = false }
+        // Applied placements still burn the clue's credit: place-by-hint,
+        // undo, place-by-hand must not read as a fresh deduction.
+        _ = claimMasteryCredit(forClue: placement.clueIndex)
         commit(PlacedRect(rect: placement.rect, clueIndex: placement.clueIndex))
     }
 

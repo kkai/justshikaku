@@ -15,6 +15,7 @@ struct PlayHostView: View {
     let difficulty: Difficulty
 
     @Environment(PuzzleCache.self) private var cache
+    @Environment(MasteryTracker.self) private var mastery
     @State private var game: ShikakuGame?
 
     var body: some View {
@@ -31,7 +32,9 @@ struct PlayHostView: View {
             // and generates fresh only when nothing is warm. nil = the
             // player backed out first.
             guard let result = await cache.take(size: size, tier: difficulty) else { return }
-            game = ShikakuGame(puzzle: result.puzzle, size: size, difficulty: difficulty)
+            let fresh = ShikakuGame(puzzle: result.puzzle, size: size, difficulty: difficulty)
+            fresh.mastery = mastery
+            game = fresh
         }
     }
 }
@@ -41,6 +44,7 @@ struct PlayHostView: View {
 /// swaps the live game out mid-celebration (a sibling shipped that).
 struct ResumeGameView: View {
     @Environment(ProgressStore.self) private var progress
+    @Environment(MasteryTracker.self) private var mastery
     @State private var game: ShikakuGame?
 
     var body: some View {
@@ -53,13 +57,15 @@ struct ResumeGameView: View {
         }
         .onAppear {
             guard game == nil, let saved = progress.savedGame else { return }
-            game = ShikakuGame(
+            let fresh = ShikakuGame(
                 puzzle: saved.puzzle,
                 size: BoardSize(rawValue: saved.sizeRaw) ?? .five,
                 difficulty: Difficulty(rawValue: saved.difficultyRaw) ?? .gentle,
                 board: saved.board,
                 elapsedSeconds: saved.elapsedSeconds,
                 hintsUsed: saved.hintsUsed)
+            fresh.mastery = mastery
+            game = fresh
         }
     }
 }
