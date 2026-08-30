@@ -29,7 +29,7 @@ struct SettingsView: View {
                     }
                 }
             } footer: {
-                Text("Shikaku Full is a one-time purchase, shared with your family.")
+                Text("The Whole Room is a one-time purchase, shared with your family.")
             }
             Section {
                 LabeledContent("Version", value: Bundle.main.shortVersion)

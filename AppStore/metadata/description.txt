@@ -1,21 +1,25 @@
-Just Shikaku teaches you to play Shikaku properly, then gets out of the way.
+Seven techniques stand between guessing at rectangles and reading a board at a glance. Just Shikaku names them, teaches each one on a real position, and then proves you know them.
 
-Shikaku is a puzzle of rectangles. The grid holds scattered numbers, and your job is to divide the whole grid into rectangles so that each one contains exactly one number, and that number is exactly how many cells the rectangle covers. No gaps, no overlaps. That is the whole rulebook. Getting good at it is another matter, and that is what this app is for.
+Shikaku hands you a grid of numbers. You carve it into rectangles until every number sits in a rectangle of exactly that many cells. Simple to state, and surprisingly deep to play well — the depth is in arguments like Prime Strips, Sole Owner, and Stranded Cell, and those arguments are what this app is actually about.
 
-Seven lessons take you from the rules to the arguments experienced solvers stop noticing they make: primes that can only be strips, the cell that only one number can reach, the placement that would strand a corner, counting a walled-off region against what could ever fill it. Each lesson is a real board where the technique is the next move, not a page of text to read.
+WHAT NO OTHER SHIKAKU HAS
 
-When you get stuck in a real game, the hint button climbs a ladder. First a nudge, then the technique's name and rule, then the argument drawn right on your board: every rectangle that could hold the number appears, the impossible ones are struck out, and what remains is the answer you make yourself. It will lay the rectangle for you if you insist, but that is the last thing it offers rather than the first.
+- A curriculum. Seven named techniques, each with its own lesson on a board where that technique is the next move.
+- Hints that argue. Ask for help and the reasoning climbs a ladder: a nudge, then the technique's name, then the full argument drawn on your board — the candidates that could work, the ones that die, the cell that decides it. The app can lay the rectangle for you, but that is the ladder's last rung and it applies exactly one argued move. Your solve stays yours.
+- A daily that teaches. Every player in the world gets the same room, and each day's room is built around one named technique. Solve it and your streak grows; solve it unaided and that technique's mastery grows with it.
+- Proof behind every board. Before a puzzle reaches you, the engine has verified it has exactly one solution and that the taught techniques are enough to reach it. Guessing is never required, on any board, at any difficulty.
+- Mastery you earn by understanding. Each correct rectangle you lay without help is checked against the solver's own derivation, and the hardest technique in that reasoning gets the credit. Seven seals fill as you learn; speed is never the score.
 
-Practice drills rehearse one technique at a time. Mastery counts only the deductions you worked out unaided, so your progress path shows what you can actually do.
+BUILT LIKE AN INSTRUMENT
 
-Every puzzle has exactly one solution and can be finished by reasoning alone. The app proves both before a board ever reaches you. You are never asked to guess.
+Drawing rectangles is the whole interface, so it has to be right: the drag anchors where your finger lands, a live count shows the cells you have against the cells you need, the board's border is forgiving to edge-of-screen fingers, and redrawing over a rectangle simply replaces it. Timed drills rehearse one technique on a cold board. Statistics show your streak, your solve history, and how your hint use falls as the techniques land.
 
-Drawing feels like the puzzle deserves: drag and a taut ink line snaps to the grid, the rectangle settles in like a laid mat, and a live count shows how many cells you have against how many you need.
+One committed look: a dark room, green rectangles, drawn digits. No themes, no confetti, and the only red in the game is the ink the teaching uses.
 
-FREE
-The rules tutorial in full. The first two technique lessons. 5x5 and 7x7 boards at every difficulty, including the hardest. An error check that tells you when a rectangle cannot be part of the finished room. Best times.
+FREE FOREVER
+The rules, the first two technique lessons, the daily room and its streak, 5x5 and 7x7 boards at every difficulty including the hardest, best times, and an error check.
 
-ONE PURCHASE UNLOCKS
-Five more lessons. Every practice drill. The hints that teach instead of just answering. 10x10 and 12x12 boards. Full statistics and your technique path.
+THE WHOLE ROOM, ONCE
+A single purchase adds the five remaining lessons, the timed drills, the full hint ladder with the drawn argument, 10x10 and 12x12 boards, and the complete statistics. No subscription. No ads. Hints are never a currency.
 
-No ads, no subscription, no timers, no energy, no coins. Everything works offline.
+Everything works offline.

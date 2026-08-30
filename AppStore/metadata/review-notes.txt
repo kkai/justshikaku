@@ -1,22 +1,42 @@
-No account, no login, no demo credentials needed. Everything works offline and
-all progress is stored on the device.
+No account, no login, no demo credentials. All progress lives on the device
+and every feature works offline.
 
-There is one non-consumable in-app purchase, de.kaikunze.shikaku.full, which
-unlocks five of the seven technique lessons, the practice drills, the
-escalating teaching hints, the 10x10 and 12x12 boards, and the full
-statistics screen. Free play covers the rules tutorial, the first two
-lessons, 5x5 and 7x7 boards at every difficulty, best times, and an error
-check that flags a rectangle that cannot be part of the solution.
+WHAT CHANGED SINCE THE PREVIOUS SUBMISSION
 
-Two things that may look inconsistent but are deliberate:
+This build is a substantial revision responding to the earlier 4.3(a)
+finding. The app's differentiator is functional: it is, to our knowledge,
+the only Shikaku app with a named-technique curriculum. Concretely in this
+build:
 
-1. Tapping a locked board size bounces the selection back and opens the
-   purchase screen instead of disabling the chip, so the feature stays
-   visible rather than hidden. The same applies to locked lesson rows.
+- Seven named solving techniques, each with an interactive lesson.
+- A hint ladder that draws the solver's argument on the player's own board
+  (candidates, eliminations, the deciding cell, dimension arrows, and the
+  technique's name lettered above the grid). It never auto-solves; its last
+  rung applies a single argued move.
+- A curriculum-tied daily puzzle: each date's board is generated so a
+  scheduled technique appears in its logical solution; unaided completion
+  advances that technique's mastery.
+- Mastery tracking verified against the engine: an unhinted correct
+  rectangle is credited only when the logical solver can independently
+  derive it from the position it was played in.
+- Timed practice drills per technique.
+- Every board is machine-verified before play to have exactly one solution
+  AND to be solvable by the taught techniques alone — no guessing anywhere.
+- A distinct visual identity: dark, opaque, drawn digit glyphs, no themes.
 
-2. A rectangle whose size disagrees with its number is allowed to stay on
-   the board, marked with a red count. Free players' hints are errors-only,
-   so mistakes must be possible to make; the hint then points at them.
+PURCHASE MODEL
 
-Difficulty is never behind the purchase: a free player can play the hardest
-tier on the free board sizes.
+One non-consumable, de.kaikunze.shikaku.full. Free tier: rules tutorial,
+two lessons, the daily and its streak, 5x5/7x7 at every difficulty, best
+times, error check. The purchase adds the other five lessons, drills, the
+full hint ladder, 10x10/12x12, and full statistics. Difficulty is never
+paywalled.
+
+TWO DELIBERATE BEHAVIOURS
+
+1. Locked sizes/lessons stay tappable and open the purchase sheet rather
+   than being disabled, so what exists is visible.
+2. A rectangle whose area disagrees with its number is allowed to commit,
+   marked with a hatched overlay and a have/need count — the free tier's
+   errors-only hints need mistakes to be possible before they can point
+   at them.
