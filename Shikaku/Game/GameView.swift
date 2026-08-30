@@ -139,6 +139,9 @@ private struct WinOverlay: View {
         VStack(spacing: Layout.s4) {
             Spacer()
             stamp
+            Text("The room is finished.")
+                .font(.subheadline)
+                .foregroundStyle(Theme.inkSoft)
             Text(TimeFormatting.clock(game.elapsedSeconds))
                 .font(Theme.numberFont(size: 34))
                 .foregroundStyle(Theme.ink)
@@ -164,9 +167,10 @@ private struct WinOverlay: View {
     private var stamp: some View {
         Text("済")
             .font(.system(size: 64, weight: .bold))
-            .foregroundStyle(Theme.surface)
+            .foregroundStyle(Theme.ink)
             .frame(width: 110, height: 110)
-            .background(Theme.shu, in: RoundedRectangle(cornerRadius: 10))
+            .background(Theme.shu, in: Rectangle())
+            .overlay(Rectangle().strokeBorder(.black.opacity(0.3), lineWidth: 1))
             .rotationEffect(.degrees(stamped ? -6 : -20))
             .scaleEffect(stamped ? 1.0 : 1.6)
             .opacity(stamped ? 1 : 0)

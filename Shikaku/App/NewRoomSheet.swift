@@ -16,8 +16,13 @@ struct NewRoomSheet: View {
     let onStart: () -> Void
 
     @Environment(EntitlementStore.self) private var entitlements
-    @Environment(PaywallPresenter.self) private var paywall
     @Environment(\.dismiss) private var dismiss
+
+    /// The paywall must be presented from THIS sheet, not through
+    /// `PaywallPresenter`: the presenter's sheet hangs off ContentView, and
+    /// SwiftUI silently refuses to present it while this sheet is already up
+    /// — so a locked chip would do nothing at all.
+    @State private var paywallFeature: PaidFeature?
 
     var body: some View {
         ZStack {
@@ -41,6 +46,9 @@ struct NewRoomSheet: View {
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+        .sheet(item: $paywallFeature) { feature in
+            PaywallView(feature: feature)
+        }
     }
 
     private var sizePicker: some View {
@@ -64,7 +72,7 @@ struct NewRoomSheet: View {
             if available {
                 size = candidate
             } else {
-                paywall.present(.largerBoards)
+                paywallFeature = .largerBoards
             }
         } label: {
             HStack(spacing: 3) {

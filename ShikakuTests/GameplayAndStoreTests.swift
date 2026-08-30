@@ -197,9 +197,15 @@ import Testing
                                    encoding: .utf8)) ?? ""
         }
         for feature in PaidFeature.allCases {
+            // Two presenting forms exist: the PaywallPresenter route, and a
+            // sheet-local `paywallFeature = .x` for surfaces that are
+            // themselves sheets (the presenter's ContentView-anchored sheet
+            // silently cannot present over another sheet — NewRoomSheet hit
+            // exactly that).
             #expect(corpus.contains("paywall.present(.\(feature))")
-                    || corpus.contains("present(.\(feature))"),
-                    "\(feature) has no paywall.present call site")
+                    || corpus.contains("present(.\(feature))")
+                    || corpus.contains("paywallFeature = .\(feature)"),
+                    "\(feature) has no paywall presenting call site")
         }
     }
 }

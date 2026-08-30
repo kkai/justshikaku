@@ -10,16 +10,18 @@ nonisolated enum PaidFeature: String, CaseIterable, Sendable, Identifiable {
 
     var id: String { rawValue }
 
-    // Placeholder copy — a humanizer pass comes later. Technique *prose*
-    // (what a technique is and how its argument goes) belongs to
-    // Teaching/TechniqueContent.swift, never here.
+    // Technique *prose* (what a technique is and how its argument goes)
+    // belongs to Teaching/TechniqueContent.swift, never here.
+    // Every string here is Shikaku's own. The siblings share this *type*, and
+    // that is fine — what they must never share again is a sentence: the
+    // 4.3(a) rejection was fed by four paywalls reading identically.
     var headline: String {
         switch self {
-        case .largerBoards: "Large grids"
-        case .lessons: "The rest of the curriculum"
-        case .practiceDrills: "Practice drills"
-        case .teachingHints: "Hints that teach"
-        case .fullStats: "Your progress"
+        case .largerBoards: "The big rooms"
+        case .lessons: "Five more techniques"
+        case .practiceDrills: "Timed drills"
+        case .teachingHints: "The drawn argument"
+        case .fullStats: "The mastery path"
         }
     }
 
@@ -30,11 +32,11 @@ nonisolated enum PaidFeature: String, CaseIterable, Sendable, Identifiable {
         case .lessons:
             "Five more technique lessons: the whole path from the first easy deduction to the counting endgame."
         case .practiceDrills:
-            "A drill for every technique, and progress that only counts the deductions you made without help."
+            "One technique at a time, on small rooms built so that technique is the move. Only unaided layings count."
         case .teachingHints:
             "The full hint ladder with the drawn argument. These hints show you why, instead of only telling you something is wrong."
         case .fullStats:
-            "Solve counts and history, your hints-taken trend, and the mastery path in detail."
+            "Best times, solve history, and every technique's seal — cut when you earn it, never before."
         }
     }
 }

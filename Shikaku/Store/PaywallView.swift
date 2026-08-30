@@ -59,7 +59,7 @@ struct PaywallView: View {
 
     private var featureList: some View {
         VStack(alignment: .leading, spacing: Layout.s3) {
-            Text("The full game includes")
+            Text("The whole room")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(Theme.inkSoft)
                 .textCase(.uppercase)
@@ -79,8 +79,9 @@ struct PaywallView: View {
             }
         }
         .padding(Layout.s4)
-        .background(RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous)
-            .fill(Theme.surface))
+        // Square, hairline-ruled, on the floor — the same material vocabulary
+        // as every other panel since the rounded white card was retired.
+        .background(Rectangle().strokeBorder(Theme.hairline, lineWidth: 1))
     }
 
     private var purchaseControls: some View {
@@ -93,8 +94,8 @@ struct PaywallView: View {
                 } else {
                     // Never hardcode the price — App Review rejects a button
                     // that disagrees with the product's real localized price.
-                    Text(entitlements.product.map { "Unlock everything · \($0.displayPrice)" }
-                         ?? "Unlock everything")
+                    Text(entitlements.product.map { "Unlock the whole room · \($0.displayPrice)" }
+                         ?? "Unlock the whole room")
                 }
             }
             .buttonStyle(PrimaryButtonStyle())
@@ -102,7 +103,7 @@ struct PaywallView: View {
             // can never be started on top of each other.
             .disabled(entitlements.purchaseState.isBusy)
 
-            Text("One purchase. No subscription, no ads.")
+            Text("Pay once. The room is yours — no ads, ever.")
                 .font(.footnote)
                 .foregroundStyle(Theme.inkSoft)
 
@@ -163,7 +164,7 @@ private struct SheetCloseButton: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.inkSoft)
                 .padding(Layout.s2)
-                .background(Circle().fill(Theme.surface))
+                .background(Rectangle().fill(Theme.frame))
         }
         .accessibilityLabel("Close")
     }
@@ -190,7 +191,7 @@ struct LockedFeaturePanel: View {
                 .foregroundStyle(Theme.inkSoft)
                 .multilineTextAlignment(.center)
             // Tappable, never .disabled — the tap IS the paywall entry point.
-            Button("Unlock everything") {
+            Button("Unlock the whole room") {
                 paywall.present(feature)
             }
             .buttonStyle(SecondaryButtonStyle())
@@ -199,7 +200,7 @@ struct LockedFeaturePanel: View {
         .padding(Layout.s5)
         .frame(maxWidth: 420)
         .frame(maxWidth: .infinity)
-        .background(RoundedRectangle(cornerRadius: Layout.sheetRadius, style: .continuous)
-            .fill(Theme.surface))
+        // A timber panel, square like everything else in the room.
+        .background(Rectangle().fill(Theme.frame))
     }
 }
