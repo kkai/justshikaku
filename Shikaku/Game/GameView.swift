@@ -61,6 +61,7 @@ struct GameView: View {
                 // The daily records into the streak, not the best-time table,
                 // and never owned the save slot.
                 progress.recordDailyCompleted(day: day, seconds: game.elapsedSeconds)
+                progress.awardWeekIfComplete(containing: day)
             } else {
                 progress.clearSavedGame()
                 wasRecord = progress.recordSolve(

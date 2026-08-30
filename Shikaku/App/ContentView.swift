@@ -48,6 +48,10 @@ struct ContentView: View {
             DrillView(technique: technique)
         case .proof:
             ReplayView()
+        case .spotIt(let technique):
+            SpotItView(technique: technique)
+        case .climb:
+            ClimbView()
         case .stats:
             StatsView()
         case .settings:

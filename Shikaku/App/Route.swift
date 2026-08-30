@@ -24,6 +24,10 @@ nonisolated enum Route: Hashable {
     case drill(Technique)
     /// The last solve, replayed and graded.
     case proof
+    /// Ten mined positions where one technique is the move.
+    case spotIt(Technique)
+    /// Room after room up the ladder; three strikes.
+    case climb
     case stats
     case settings
 }

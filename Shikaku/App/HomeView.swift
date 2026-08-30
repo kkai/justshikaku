@@ -40,8 +40,13 @@ struct HomeView: View {
                     sealPath
                     HintTrendLine(series: progress.hintTrend)
                         .padding(.top, -Layout.s3)
+                    warmUp
+                        .padding(.top, -Layout.s3)
                     DailyCard(path: $path)
+                    WeekView(path: $path)
+                        .padding(.top, -Layout.s3)
                     ProofCard(path: $path)
+                    climbCard
                     if progress.savedGame != nil {
                         continueCard
                     }
@@ -96,6 +101,39 @@ struct HomeView: View {
         return "\(size) · \(tier) · \(TimeFormatting.clock(saved.elapsedSeconds))"
     }
 
+    /// The Climb's card: one line, the personal best, a way in.
+    private var climbCard: some View {
+        Button {
+            Haptics.previewTick()
+            path.append(.climb)
+        } label: {
+            HStack(spacing: Layout.s4) {
+                Text("段")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(Theme.inkSoft)
+                    .frame(width: 40, height: 40)
+                    .background(Theme.frame)
+                    .overlay(Rectangle().strokeBorder(Theme.hairline, lineWidth: 1))
+                VStack(alignment: .leading, spacing: Layout.s1) {
+                    Text("The Climb")
+                        .font(.headline)
+                        .foregroundStyle(Theme.ink)
+                    Text(progress.climbBest > 0
+                         ? "Best: \(progress.climbBest) rooms"
+                         : "Room after room, three strikes, no clock.")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.inkSoft)
+                }
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .foregroundStyle(Theme.inkSoft)
+            }
+            .padding(Layout.s4)
+            .homeCard()
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - New room
 
     private var playButton: some View {
@@ -122,6 +160,43 @@ struct HomeView: View {
 
     // MARK: - The seal path
 
+    /// The weakest seal, by unaided-per-seen ratio among techniques the
+    /// player has met but not learned — the one that would benefit most from
+    /// a drill right now. Hidden until at least two techniques are begun,
+    /// because "weakest of one" is noise.
+    private var weakestSeal: Technique? {
+        let candidates = Technique.allCases.filter {
+            let stage = mastery.stage(for: $0)
+            return stage > .unseen && stage < .learned
+        }
+        guard candidates.count >= 2 else { return nil }
+        return candidates.min { a, b in
+            ratio(a) < ratio(b)
+        }
+    }
+
+    private func ratio(_ technique: Technique) -> Double {
+        let record = progress.mastery.perTechnique[technique.rawValue]
+        let unaided = Double(record?.unaided ?? 0)
+        let seen = Double(record?.seen ?? 0)
+        return unaided / (seen + 1)
+    }
+
+    @ViewBuilder
+    private var warmUp: some View {
+        if let technique = weakestSeal {
+            HStack(spacing: Layout.s3) {
+                Text("Weakest seal: \(TechniqueContent.name(for: technique))")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.inkSoft)
+                Button("Drill it") { path.append(.drill(technique)) }
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.heri)
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
     /// Each seal opens three doors — the lesson, the timed drill, and a
     /// fresh room generated to need that technique. The row is the app's
     /// second game launcher, not a decoration. A gated technique routes to
@@ -145,6 +220,7 @@ struct HomeView: View {
                 Button("The lesson") { path.append(.lesson(technique)) }
                 if mastery.stage(for: technique) > .unseen {
                     Button("A timed drill") { path.append(.drill(technique)) }
+                    Button("Spot it, ten times") { path.append(.spotIt(technique)) }
                 }
                 Button("A room that needs it") {
                     path.append(.techniqueRoom(technique,

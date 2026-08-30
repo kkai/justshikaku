@@ -54,6 +54,8 @@ final class ProgressStore {
         static let daily = "shikaku.daily.v1"
         static let hintTrend = "shikaku.hintTrend.v1"
         static let lastSolve = "shikaku.lastSolve.v1"
+        static let climb = "shikaku.climb.v1"
+        static let weeks = "shikaku.weeks.v1"
     }
 
     /// The size/difficulty the player last started a game with, so the pickers
@@ -128,6 +130,11 @@ final class ProgressStore {
     /// it should fall as the techniques land.
     private(set) var hintTrend: [Int] = []
     private(set) var lastSolve: LastSolve?
+    /// Most rooms finished in one Climb run.
+    private(set) var climbBest: Int = 0
+    /// ISO-week keys ("2026-W35") for every calendar week whose seven
+    /// dailies were all finished.
+    private(set) var weeklySeals: [String] = []
     var settings = Settings() {
         didSet { save(settings, key: Key.settings) }
     }
@@ -143,6 +150,44 @@ final class ProgressStore {
         daily = load(DailyRecord.self, key: Key.daily) ?? DailyRecord()
         hintTrend = load([Int].self, key: Key.hintTrend) ?? []
         lastSolve = load(LastSolve.self, key: Key.lastSolve)
+        climbBest = load(Int.self, key: Key.climb) ?? 0
+        weeklySeals = load([String].self, key: Key.weeks) ?? []
+    }
+
+    func recordClimb(rooms: Int) {
+        guard rooms > climbBest else { return }
+        climbBest = rooms
+        save(rooms, key: Key.climb)
+    }
+
+    /// Awards the weekly seal when all seven days of `week` are complete.
+    /// Called after each daily win; idempotent.
+    func awardWeekIfComplete(containing day: DayKey) {
+        let week = Self.weekDays(containing: day)
+        guard week.allSatisfy({ hasCompletedDaily($0) }) else { return }
+        let key = Self.weekKey(of: day)
+        guard !weeklySeals.contains(key) else { return }
+        weeklySeals.append(key)
+        save(weeklySeals, key: Key.weeks)
+    }
+
+    /// Monday through Sunday of the week containing `day` (Zeller weekday).
+    nonisolated static func weekDays(containing day: DayKey) -> [DayKey] {
+        // Walk back to Monday (weekday 2), then forward seven days.
+        var start = day
+        while DailySeed.weekday(of: start) != 2 { start = start.previous() }
+        var days = [start]
+        var cursor = start.date()
+        for _ in 0..<6 {
+            cursor = Calendar.current.date(byAdding: .day, value: 1, to: cursor) ?? cursor
+            days.append(DayKey(date: cursor))
+        }
+        return days
+    }
+
+    nonisolated static func weekKey(of day: DayKey) -> String {
+        let monday = weekDays(containing: day)[0]
+        return monday.isoString
     }
 
     func recordLastSolve(_ solve: LastSolve) {

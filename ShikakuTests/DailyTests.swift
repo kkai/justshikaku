@@ -168,3 +168,51 @@ import Testing
         #expect(outcome.result.trace.contains { $0.technique == .onlyFit })
     }
 }
+
+@Suite struct RoundSixTests {
+
+    /// The miner's contract: from each position's placements alone, the
+    /// first applicable technique is the target.
+    @Test func minedPositionsPutTheTechniqueFirst() {
+        let positions = LessonPositions.mine(technique: .soleOwner, count: 3, seed: 7)
+        #expect(!positions.isEmpty)
+        for position in positions {
+            var state = SolverState(puzzle: position.puzzle)
+            for p in position.preplaced { state.apply(placement: p) }
+            let first = LogicalSolver.nextStep(puzzle: position.puzzle, state: state)
+            #expect(first?.technique == .soleOwner)
+            #expect(position.puzzle.solution.indices.contains(position.answerClue))
+        }
+    }
+
+    /// Week math: seven days Monday–Sunday, stable key, seal awarding.
+    @Test func weekSealAwardsOnlyWhenAllSevenAreDone() {
+        let defaults = UserDefaults(suiteName: "week-tests-\(UUID().uuidString)")!
+        let store = ProgressStore(userDefaults: defaults)
+        let anchor = DayKey(year: 2026, month: 8, day: 26)   // a Wednesday
+        let week = ProgressStore.weekDays(containing: anchor)
+        #expect(week.count == 7)
+        #expect(DailySeed.weekday(of: week[0]) == 2)          // Monday
+        #expect(DailySeed.weekday(of: week[6]) == 1)          // Sunday
+        for day in week.dropLast() {
+            store.recordDailyCompleted(day: day, seconds: 60)
+            store.awardWeekIfComplete(containing: day)
+        }
+        #expect(store.weeklySeals.isEmpty)
+        store.recordDailyCompleted(day: week[6], seconds: 60)
+        store.awardWeekIfComplete(containing: week[6])
+        #expect(store.weeklySeals == [ProgressStore.weekKey(of: anchor)])
+        // Idempotent.
+        store.awardWeekIfComplete(containing: anchor)
+        #expect(store.weeklySeals.count == 1)
+    }
+
+    /// Climb best is monotonic.
+    @Test func climbBestOnlyRises() {
+        let defaults = UserDefaults(suiteName: "climb-tests-\(UUID().uuidString)")!
+        let store = ProgressStore(userDefaults: defaults)
+        store.recordClimb(rooms: 5)
+        store.recordClimb(rooms: 3)
+        #expect(store.climbBest == 5)
+    }
+}
