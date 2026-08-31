@@ -30,6 +30,22 @@ struct LearnMenuView: View {
                     }
                 }
             }
+            Section("Ways to play") {
+                ForEach(ModeGuide.listed) { mode in
+                    NavigationLink {
+                        ModeGuideView(mode: mode)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(ModeGuide.title(mode))
+                                .foregroundStyle(Theme.ink)
+                            Text(ModeGuide.oneLine(mode))
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.inkSoft)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
             Section("Techniques") {
                 ForEach(Technique.allCases) { technique in
                     row(for: technique)

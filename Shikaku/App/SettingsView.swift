@@ -20,6 +20,13 @@ struct SettingsView: View {
                 Toggle("Show mistakes", isOn: errorFeedbackBinding)
             }
             Section {
+                NavigationLink { ModeGuideList() } label: {
+                    Text("Ways to play")
+                }
+            } footer: {
+                Text("Every mode, and how each one ends.")
+            }
+            Section {
                 if entitlements.isUnlocked {
                     Label("Full game unlocked", systemImage: "checkmark.seal")
                         .foregroundStyle(Theme.inkSoft)

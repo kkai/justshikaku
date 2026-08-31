@@ -159,7 +159,7 @@ struct HomeView: View {
                         .foregroundStyle(Theme.ink)
                     Text(progress.climbBest > 0
                          ? "Best: \(progress.climbBest) rooms"
-                         : "Room after room, three strikes, no clock.")
+                         : ModeGuide.oneLine(.climb))
                         .font(.subheadline)
                         .foregroundStyle(Theme.inkSoft)
                 }

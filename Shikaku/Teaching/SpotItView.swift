@@ -52,6 +52,7 @@ struct SpotItView: View {
             }
         }
         .navigationTitle("Spot it")
+        .modeGuide(.spotIt)
         .navigationBarTitleDisplayMode(.inline)
         .swipeBackDisabled()
         .task { await mine() }

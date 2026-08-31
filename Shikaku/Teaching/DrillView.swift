@@ -44,6 +44,7 @@ struct DrillView: View {
             .padding(.vertical, Layout.s4)
         }
         .navigationTitle("Drill")
+        .modeGuide(.drill)
         .navigationBarTitleDisplayMode(.inline)
         .swipeBackDisabled()
         .task {

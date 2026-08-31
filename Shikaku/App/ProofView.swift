@@ -141,6 +141,7 @@ struct ReplayView: View {
             }
         }
         .navigationTitle("Your last room")
+        .modeGuide(.proof)
         .navigationBarTitleDisplayMode(.inline)
         .task {
             guard graded.isEmpty, let solve = progress.lastSolve else { return }

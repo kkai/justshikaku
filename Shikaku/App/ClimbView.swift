@@ -56,6 +56,7 @@ struct ClimbView: View {
             }
         }
         .navigationTitle("The Climb")
+        .modeGuide(.climb)
         .navigationBarTitleDisplayMode(.inline)
         .swipeBackDisabled()
         .task { await loadStage() }

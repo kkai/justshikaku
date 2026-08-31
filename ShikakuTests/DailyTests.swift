@@ -216,3 +216,31 @@ import Testing
         #expect(store.climbBest == 5)
     }
 }
+
+@Suite struct ModeGuideTests {
+
+    /// Every way to play must be explained, and the explanations obey the
+    /// same copy rules as the rest of the app (no em dashes, real sentences).
+    @Test func everyModeIsExplainedInPlainLanguage() {
+        for mode in Mode.allCases {
+            let title = ModeGuide.title(mode)
+            let oneLine = ModeGuide.oneLine(mode)
+            let explanation = ModeGuide.explanation(mode)
+            #expect(!title.isEmpty)
+            #expect(!oneLine.isEmpty)
+            #expect(explanation.count > 80, "\(mode) needs a real explanation")
+            for text in [title, oneLine, explanation] {
+                #expect(!text.contains("—"), "\(mode): em dash in player-facing copy")
+                #expect(!text.contains("–"), "\(mode): en dash in player-facing copy")
+            }
+            #expect(oneLine.hasSuffix("."))
+        }
+    }
+
+    /// The listed order is what Learn and Settings show; every mode appears
+    /// exactly once, so a new mode cannot be added without a guide entry.
+    @Test func everyModeIsListedOnce() {
+        #expect(Set(ModeGuide.listed).count == ModeGuide.listed.count)
+        #expect(Set(ModeGuide.listed) == Set(Mode.allCases))
+    }
+}

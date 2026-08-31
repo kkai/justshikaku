@@ -50,6 +50,7 @@ struct GameView: View {
             }
         }
         .swipeBackDisabled()
+        .modeGuide(mode)
         .navigationBarBackButtonHidden(game.didWin)
         .task(id: game.didWin) {
             guard game.didWin else { return }
@@ -107,6 +108,13 @@ struct GameView: View {
                 .accessibilityLabel("Elapsed \(TimeFormatting.spoken(game.elapsedSeconds))")
         }
         .padding(.horizontal, Layout.s4)
+    }
+
+    /// Which way to play this game is, for the info button.
+    private var mode: Mode {
+        if game.dailyDay != nil { return .daily }
+        if game.featuring != nil { return .techniqueRoom }
+        return .freePlay
     }
 
     private var headerLabel: String {
