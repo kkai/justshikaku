@@ -25,11 +25,48 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-  body { margin: 0; background: var(--floor); color: var(--ink);
+  body { margin: 0; overflow-x: hidden; background: var(--floor); color: var(--ink);
          font: 17px/1.65 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
   .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
   a { color: var(--heri); }
   :focus-visible { outline: 2px solid var(--heri); outline-offset: 3px; }
+
+  /* The title block: what a drawing puts at its edge. Flush, square, no
+     float and no shadow, because nothing else on this page floats. */
+  .titleblock { position: sticky; top: 0; z-index: 10;
+                background: rgba(20,16,12,.94);
+                border-bottom: 1px solid var(--hairline);
+                backdrop-filter: saturate(140%) blur(6px); }
+  .titleblock .inner { max-width: 760px; margin: 0 auto; padding: 0 20px;
+                       height: 52px; display: flex; align-items: center; gap: 18px; }
+  .titleblock .mark { display: flex; align-items: center; gap: 9px; min-width: 0;
+                      font-weight: 700; font-size: 15px; color: var(--ink);
+                      text-decoration: none; white-space: nowrap; }
+  .titleblock nav { display: flex; gap: 18px; margin-left: auto;
+                    flex-wrap: nowrap; min-width: 0; }
+  .titleblock nav a { color: var(--ink-soft); text-decoration: none;
+                      font-size: 14px; white-space: nowrap; }
+  .titleblock nav a:hover { color: var(--ink); }
+  .titleblock .go { margin-left: 18px; }
+  @media (max-width: 620px) {
+    .titleblock nav { gap: 14px; }
+    .titleblock nav a.wide { display: none; }
+  }
+
+  /* Bands give the page a beat. The column inside stays put. */
+  .band { padding: 8px 0 48px; }
+  .band.raised { background: var(--panel);
+                 border-top: 1px solid var(--hairline);
+                 border-bottom: 1px solid var(--hairline); }
+  section[id] { scroll-margin-top: 68px; }
+
+  /* The eyebrow is the app's own gesture: the technique lettered above the
+     board in spaced vermilion capitals. Here it labels each section, and it
+     always says something true about what follows. */
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .28em;
+             text-transform: uppercase; color: var(--shu);
+             margin: 52px 0 6px; }
+  .band .eyebrow:first-child, .band > .wrap > .eyebrow:first-child { margin-top: 44px; }
 
   /* Hero */
   header { padding: 56px 0 0; text-align: center; }
@@ -42,7 +79,9 @@
   .badge { display: inline-block; margin: 22px 0 0; }
   .badge img { height: 48px; width: auto; display: block; }
 
-  h2 { font-size: 25px; letter-spacing: -.02em; margin: 56px 0 10px; }
+  h2 { font-size: 32px; font-weight: 800; letter-spacing: -.03em;
+       margin: 0 0 14px; line-height: 1.15; }
+  .eyebrow + h2 { margin-top: 0; }
   h3 { font-size: 17px; margin: 26px 0 4px; }
   p { margin: 0 0 14px; }
   .lede { font-size: 19px; }
@@ -70,15 +109,46 @@
   .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
            margin: 22px 0 0; }
   .shots figure { margin: 0; }
-  .shots img { width: 100%; height: auto; display: block;
-               border: 1px solid var(--hairline); }
+  /* Inset in the same raised band the app frames its board with. */
+  .shots .framed { background: var(--frame); padding: 8px;
+                   border: 1px solid var(--hairline); }
+  .shots img { width: 100%; height: auto; display: block; }
   .shots figcaption { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
   @media (max-width: 620px) {
     .cols { grid-template-columns: 1fr; }
     .shots { grid-template-columns: repeat(2, 1fr); }
     h1 { font-size: 38px; }
   }
-  @media (max-width: 380px) { .shots { grid-template-columns: 1fr; } }
+  @media (max-width: 420px) {
+    .titleblock .inner { gap: 10px; }
+    .titleblock nav { gap: 12px; }
+    h1 { font-size: 34px; }
+    h2 { font-size: 26px; }
+  }
+  @media (max-width: 380px) {
+    .shots { grid-template-columns: 1fr; }
+    .claims { grid-template-columns: 1fr; }
+  }
+
+  .claims { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+            margin: 34px 0 56px; }
+  .claim { display: flex; align-items: center; gap: 10px;
+           font-size: 14px; color: var(--ink-soft); }
+  .claim .glyph { width: 26px; height: 26px; flex: none;
+                  display: grid; place-items: center;
+                  border: 1px solid var(--hairline); background: var(--frame);
+                  font-size: 12px; font-weight: 700; color: var(--ink); }
+  @media (max-width: 620px) { .claims { grid-template-columns: repeat(2, 1fr); } }
+
+  /* One reveal, once, and never when the visitor asked for stillness.
+     Scoped to .js so that a page whose script never runs still shows every
+     word: content must not depend on an animation to exist. */
+  .js .reveal { opacity: 0; transform: translateY(8px);
+                transition: opacity .4s ease, transform .4s ease; }
+  .js .reveal.seen { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal { opacity: 1; transform: none; transition: none; }
+  }
 
   footer { border-top: 1px solid var(--hairline); margin-top: 64px;
            padding: 22px 0 70px; color: var(--ink-soft); font-size: 14px;
@@ -86,7 +156,39 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<script>
+  // Only dim the sections if this script runs at all and the visitor has not
+  // asked for stillness. Everything stays visible otherwise.
+  if (!(window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) &&
+      'IntersectionObserver' in window) {
+    document.documentElement.className += ' js';
+  }
+</script>
+
+<div class="titleblock">
+  <div class="inner">
+    <a class="mark" href="#top">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="1" y="1" width="14" height="14" fill="none"
+              stroke="var(--heri)" stroke-width="1.6"/>
+        <line x1="6" y1="1" x2="6" y2="15" stroke="var(--heri)" stroke-width="1.6"/>
+        <line x1="6" y1="8" x2="15" y2="8" stroke="var(--heri)" stroke-width="1.6"/>
+      </svg>
+      Just Shikaku
+    </a>
+    <nav>
+      <a href="#why">Why</a>
+      <a href="#teaching" class="wide">Teaching</a>
+      <a href="#see" class="wide">See it</a>
+      <a href="#price">Price</a>
+      <a href="#support" class="wide">Support</a>
+    </nav>
+    <span class="go" id="ctanav"></span>
+  </div>
+</div>
+
+<div class="wrap" id="top">
 
 <header>
   <h1>Just
@@ -103,20 +205,37 @@
   <p id="cta"></p>
 </header>
 
-<h2 id="why">Watch it explain itself</h2>
+<div class="claims">
+  <div class="claim"><span class="glyph" aria-hidden="true">7</span>Seven techniques</div>
+  <div class="claim"><span class="glyph" aria-hidden="true">今</span>A teaching daily</div>
+  <div class="claim"><span class="glyph" aria-hidden="true">?</span>Hints that argue</div>
+  <div class="claim"><span class="glyph" aria-hidden="true">済</span>Proof per board</div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="band raised"><div class="wrap">
+<section id="why" class="reveal">
+<p class="eyebrow">The argument</p>
+<h2>Watch it explain itself</h2>
 <div class="card">
   <p style="margin-top:0;color:var(--ink-soft);font-size:15px">A 3 and a 6 fill a nine cell
-  room. The 3 has exactly one place it can go, and the app can show you why instead of
-  filling it in for you. Press Why.</p>
+  room. The 3 has exactly one place it can go, and this is the app showing you why rather
+  than filling it in for you.</p>
   <svg id="argue" class="board" width="328" height="332" viewBox="0 0 328 332"
        role="img" aria-label="A Shikaku position with the app's argument drawn on it"></svg>
   <p class="note" id="arguenote">Two numbers, and one of them can only lie one way.</p>
   <div class="btnrow">
     <button class="btn" id="whybtn">Why?</button>
-    <button class="btn quiet" id="argreset">Clear</button>
   </div>
 </div>
 
+</section>
+</div></div><!-- /band -->
+
+<div class="band"><div class="wrap">
+<section id="teaching" class="reveal">
+<p class="eyebrow">The curriculum</p>
 <h2>What no other Shikaku has</h2>
 <p class="lede">Shikaku hands you a grid of numbers, and you carve it into rectangles until
 every number sits in a rectangle of exactly that many cells. The rules take a minute.
@@ -151,40 +270,55 @@ reasoned, because no other engine here knows why a move is right.</p>
 room after room up the difficulty ladder. Both end on three strikes, and neither has a
 clock, because accuracy is the game.</p>
 
+</section>
+</div></div><!-- /band -->
+
+<div class="band raised"><div class="wrap">
+<section id="see" class="reveal">
+<p class="eyebrow">On the phone</p>
 <h2>See it</h2>
 <div class="shots">
   <figure>
-    <img src="shot-hint.png" alt="The app drawing an argument: candidate rectangles ghosted, dead ones hatched out, and the technique lettered above the board." loading="lazy">
+    <div class="framed"><img src="shot-hint.png" alt="The app drawing an argument: candidate rectangles ghosted, dead ones hatched out, and the technique lettered above the board." loading="lazy"></div>
     <figcaption>The argument, drawn.</figcaption>
   </figure>
   <figure>
-    <img src="shot-game.png" alt="A partly solved room, mats laid in green on the dark floor." loading="lazy">
+    <div class="framed"><img src="shot-game.png" alt="A partly solved room, mats laid in green on the dark floor." loading="lazy"></div>
     <figcaption>Mid-solve.</figcaption>
   </figure>
   <figure>
-    <img src="shot-home.png" alt="The front page: the technique path, today's room, this week, and The Climb." loading="lazy">
+    <div class="framed"><img src="shot-home.png" alt="The front page: the technique path, today's room, this week, and The Climb." loading="lazy"></div>
     <figcaption>Where you start.</figcaption>
   </figure>
   <figure>
-    <img src="shot-lesson.png" alt="A lesson on the Prime Strips technique with its argument on the board." loading="lazy">
+    <div class="framed"><img src="shot-lesson.png" alt="A lesson on the Prime Strips technique with its argument on the board." loading="lazy"></div>
     <figcaption>A lesson.</figcaption>
   </figure>
   <figure>
-    <img src="shot-daily.png" alt="Today's room, a seven by seven board built around one technique." loading="lazy">
+    <div class="framed"><img src="shot-daily.png" alt="Today's room, a seven by seven board built around one technique." loading="lazy"></div>
     <figcaption>Today's room.</figcaption>
   </figure>
   <figure>
-    <img src="shot-win.png" alt="The finished room, stamped with a vermilion seal and the solve time." loading="lazy">
+    <div class="framed"><img src="shot-win.png" alt="The finished room, stamped with a vermilion seal and the solve time." loading="lazy"></div>
     <figcaption>Finished.</figcaption>
   </figure>
 </div>
 
+</section>
+</div></div><!-- /band -->
+
+<div class="band"><div class="wrap">
+<section id="proof" class="reveal">
+<p class="eyebrow">No guessing</p>
 <h2>Proof behind every board</h2>
 <p>Before a puzzle reaches you, the engine has verified two things: the board has exactly one
 solution, and the taught techniques are enough to reach it. Guessing is never required, on
 any board, at any difficulty. If you are stuck, there is always a next deduction waiting,
 and the hint ladder will walk you to it.</p>
 
+</section>
+<section id="try" class="reveal">
+<p class="eyebrow">Your turn</p>
 <h2>Try it yourself</h2>
 <div class="card">
   <p style="margin-top:0;color:var(--ink-soft);font-size:15px">Tap a cell, then tap the
@@ -196,7 +330,13 @@ and the hint ladder will walk you to it.</p>
   <div class="btnrow"><button class="btn" id="reset">Start over</button></div>
 </div>
 
-<h2>What it costs</h2>
+</section>
+</div></div><!-- /band -->
+
+<div class="band raised"><div class="wrap">
+<section id="price" class="reveal">
+<p class="eyebrow">What it costs</p>
+<h2>One purchase, once</h2>
 <div class="cols">
   <div class="card">
     <h3>Free forever</h3>
@@ -224,15 +364,24 @@ and the hint ladder will walk you to it.</p>
 never behind the purchase. Everything works offline.</p>
 <p id="cta2" style="text-align:center"></p>
 
-<h2>Privacy</h2>
+</section>
+</div></div><!-- /band -->
+
+<div class="band"><div class="wrap">
+<section id="privacy" class="reveal">
+<p class="eyebrow">Privacy</p>
+<h2>The app collects nothing</h2>
 <div class="card">
-  <p style="margin:0">The app collects nothing. No account, no analytics, no advertising.
-  Your progress is stored on your device and never sent anywhere, and apart from the App
-  Store purchase check the app makes no network requests at all.
+  <p style="margin:0">No account, no analytics, no advertising. Your progress is stored on
+  your device and never sent anywhere, and apart from the App Store purchase check the app
+  makes no network requests at all.
   <a href="justshikaku-privacy.html">Full privacy policy</a>.</p>
 </div>
 
-<h2>Support</h2>
+</section>
+<section id="support" class="reveal">
+<p class="eyebrow">Support</p>
+<h2>Questions</h2>
 
 <h3>I bought the unlock and it is gone</h3>
 <p>Settings, then Restore purchases. It is always available, including when the app already
@@ -256,6 +405,10 @@ wrong, mail me and say which one.</p>
 <h3>Something else</h3>
 <p><a href="mailto:kai.kunze@gmail.com">kai.kunze@gmail.com</a>.</p>
 
+</section>
+</div></div><!-- /band -->
+
+<div class="wrap">
 <footer>
   Made by <a href="https://kaikunze.de/">Kai Kunze</a> &middot;
   <a href="justshikaku-privacy.html">Privacy</a> &middot;
@@ -275,13 +428,15 @@ var APP_URL = 'https://apps.apple.com/app/id6801529551';
 
 (function () {
   if (!LIVE) return;
-  ['cta', 'cta2'].forEach(function (id) {
+  ['cta', 'cta2', 'ctanav'].forEach(function (id) {
     var host = document.getElementById(id);
     if (!host) return;
     var a = document.createElement('a');
     a.href = APP_URL;
-    a.className = 'badge btn';
-    a.textContent = 'Download on the App Store';
+    a.className = id === 'ctanav' ? 'btn' : 'badge btn';
+    a.style.textDecoration = 'none';
+    if (id === 'ctanav') { a.style.padding = '7px 12px'; a.style.fontSize = '13px'; }
+    a.textContent = id === 'ctanav' ? 'Get the app' : 'Download on the App Store';
     host.appendChild(a);
   });
 })();
@@ -305,6 +460,37 @@ var GLYPHS = {
   9: ['11,9 1,9 1,1 11,1 11,19 2,19']
 };
 
+
+// One reveal per section as it comes into view, and nothing more. Scattered
+// motion is its own kind of tell; the page has exactly one animated idea and
+// it is the argument in the hero.
+(function () {
+  var wants = window.matchMedia &&
+              window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = document.querySelectorAll('.reveal');
+  if (wants || !('IntersectionObserver' in window)) {
+    Array.prototype.forEach.call(items, function (n) { n.classList.add('seen'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px -8% 0px' });
+  Array.prototype.forEach.call(items, function (n) {
+    // Anything already on screen when the page opens was never "revealed";
+    // fading it in would just look like a page struggling to load.
+    if (n.getBoundingClientRect().top < window.innerHeight) {
+      n.classList.add('seen');
+    } else {
+      io.observe(n);
+    }
+  });
+  // Belt and braces: whatever the observer decides, nothing stays hidden.
+  setTimeout(function () {
+    Array.prototype.forEach.call(items, function (n) { n.classList.add('seen'); });
+  }, 3000);
+})();
 
 /** The same 12x20 glyph, placed directly in a board's own coordinates, so
     both demos on this page draw their numbers with the app's hand. */
@@ -504,19 +690,44 @@ function boardNumeral(value, cx, cy, opts) {
       if (reduce) { advance(); }
       else { setTimeout(advance, 1100); }
     } else {
-      document.getElementById('whybtn').disabled = true;
+      why.textContent = 'Again';
     }
   }
 
-  document.getElementById('whybtn').addEventListener('click', function () {
-    if (stage === 0) advance();
-  });
-  document.getElementById('argreset').addEventListener('click', function () {
+  var why = document.getElementById('whybtn');
+
+  function replay() {
     stage = 0;
     note.textContent = LINES[0];
-    document.getElementById('whybtn').disabled = false;
+    why.textContent = 'Why?';
     draw();
+    setTimeout(advance, 260);
+  }
+
+  why.addEventListener('click', function () {
+    if (stage === 0) { advance(); } else if (stage >= 3) { replay(); }
   });
+
+  // The page teaches before anybody asks it to: the argument runs itself
+  // once, a beat after load, so a visitor who presses nothing still sees the
+  // one thing that sets this app apart. Under reduced motion it does not run
+  // at all; the board simply waits for the button.
+  if (!reduce) {
+    var started = false;
+    var kick = function () {
+      if (started || stage !== 0) return;
+      started = true;
+      setTimeout(function () { if (stage === 0) advance(); }, 1200);
+    };
+    if ('IntersectionObserver' in window) {
+      var io2 = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { kick(); io2.disconnect(); } });
+      }, { threshold: .5 });
+      io2.observe(svg);
+    } else {
+      kick();
+    }
+  }
 
   draw();
 })();
