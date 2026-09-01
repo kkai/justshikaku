@@ -23,15 +23,23 @@ build:
 - Every board is machine-verified before play to have exactly one solution
   AND to be solvable by the taught techniques alone, so guessing is never
   required.
+- A post-solve replay that grades the player's own moves against the
+  solver: worked out, laid by a hint, or beyond the curriculum's reach.
+- Four ways to practise that are not timed: The Climb (rooms up the
+  ladder, three strikes), Spot It (ten solver-verified positions where one
+  technique is the move), per-technique timed drills, and a request for a
+  whole board generated to contain a chosen technique.
+- Today's room, a week view with a seal for a complete week, and every mode
+  explained in Learn and behind an info button on its own screen.
 - A distinct visual identity: dark, opaque, drawn digit glyphs, no themes.
 
 PURCHASE MODEL
 
 One non-consumable, de.kaikunze.shikaku.full. Free tier: rules tutorial,
-two lessons, the daily and its streak, 5x5/7x7 at every difficulty, best
-times, error check. The purchase adds the other five lessons, drills, the
-full hint ladder, 10x10/12x12, and full statistics. Difficulty is never
-paywalled.
+two lessons, today's room with its streak and weekly seal, The Climb,
+5x5/7x7 at every difficulty, best times, error check. The purchase adds the
+other five lessons, drills and Spot It, the full hint ladder, 10x10/12x12,
+and full statistics. Difficulty is never paywalled.
 
 TWO DELIBERATE BEHAVIOURS
 

@@ -9,6 +9,11 @@ WHAT NO OTHER SHIKAKU HAS
 - A daily that teaches. Every player in the world gets the same room, and each day's room is built around one named technique. Solve it and your streak grows; solve it unaided and that technique's mastery grows with it.
 - Proof behind every board. Before a puzzle reaches you, the engine has verified it has exactly one solution and that the taught techniques are enough to reach it. Guessing is never required, on any board, at any difficulty.
 - Mastery you earn by understanding. Each correct rectangle you lay without help is checked against the solver's own derivation, and the hardest technique in that reasoning gets the credit. Seven seals fill as you learn; speed is never the score.
+- The proof. When you finish a room, the app replays your own solve and grades every rectangle: worked out, laid by a hint, or a leap beyond what the lessons cover. No other puzzle app can tell you which of your own moves were reasoned.
+
+WAYS TO PLAY
+
+Today's room is the same board for everyone, built around one named technique, with a streak and a seal for a full week. The Climb sends room after room up the difficulty ladder. Spot It serves ten real mid-game positions where one technique is the move. Timed drills take a technique's board cold, and you can ask for a whole board generated to need the technique you picked. The Climb and Spot It end on three wrong rectangles and neither has a clock, because accuracy is the game, not speed. Every mode explains itself: Learn lists them all, and each one carries the same explanation behind an info button.
 
 BUILT LIKE AN INSTRUMENT
 
@@ -17,9 +22,9 @@ Drawing rectangles is the whole interface, so it has to be right: the drag ancho
 One committed look: a dark room, green rectangles, drawn digits. No themes, no confetti, and the only red in the game is the ink the teaching uses.
 
 FREE FOREVER
-The rules, the first two technique lessons, the daily room and its streak, 5x5 and 7x7 boards at every difficulty including the hardest, best times, and an error check.
+The rules, the first two technique lessons, today's room with its streak and weekly seal, The Climb, 5x5 and 7x7 boards at every difficulty including the hardest, best times, and an error check.
 
 THE WHOLE ROOM, ONCE
-A single purchase adds the five remaining lessons, the timed drills, the full hint ladder with the drawn argument, 10x10 and 12x12 boards, and the complete statistics. No subscription. No ads. Hints are never a currency.
+A single purchase adds the five remaining lessons, the timed drills and Spot It, the full hint ladder with the drawn argument, 10x10 and 12x12 boards, and the complete statistics. No subscription. No ads. Hints are never a currency.
 
 Everything works offline.

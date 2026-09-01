@@ -37,12 +37,20 @@ curriculum. Concretely:
    credited only when the engine can independently derive it from the
    position it was played in. Progress measures understanding, not speed.
 
-Since the previous submission we have also rebuilt the app's presentation
-so this is visible in ninety seconds: a new dark visual identity with
-hand-drawn digit glyphs (no other app in the category is dark), a new
-home screen led by the daily and the technique path, per-technique timed
-drills, a full statistics screen, and a rewritten store listing whose
-description, subtitle, keywords and screenshots are unique to this app.
+Since the previous submission we have also added several ways to practise
+that follow from the same engine, and none of which are timed or ranked:
+The Climb sends rooms up the difficulty ladder and ends on three wrong
+rectangles; Spot It serves ten real mid-game positions, each verified by
+the solver to be one where a chosen technique applies; a full board can be
+generated on request to contain a technique the player wants to practise;
+and a week view gives the daily a seal for seven complete days.
+
+We also rebuilt the app's presentation so the difference is visible in
+ninety seconds: a dark visual identity with hand-drawn digit glyphs (no
+other app in the category is dark), a home screen led by the technique
+path and the daily, a full statistics screen, an explanation of every mode
+inside the app, and a rewritten store listing whose description, subtitle,
+keywords and screenshots are unique to this app.
 
 The teaching-first premium puzzle is an established category on the App
 Store (e.g. Good Sudoku). We ask that Just Shikaku be evaluated as that

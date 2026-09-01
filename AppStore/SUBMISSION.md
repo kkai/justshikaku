@@ -7,18 +7,56 @@ Lacquered Room redesign, the curriculum daily, mastery/drills/stats made
 real, the rewritten listing) is on `main`; the plan lives in
 `~/.claude/plans/go-over-it-vast-walrus.md`.
 
-## 0. Resubmission checklist (2026-08-30)
+## 0. Resubmission checklist (2026-09-01, build 4)
 
-- [x] App rebuilt: dark identity, curriculum daily, drills, mastery, stats
-- [x] Listing rewritten from a blank page (`metadata/*` — push via asc.py)
-- [x] Screenshots re-captured dark (`screenshots/iphone-65/dark-*`)
-- [x] Resolution Center reply drafted: `resolution-reply-draft.md` —
-      **Kai reviews and sends; never sent automatically**
-- [ ] Archive + upload build 3, attach to the version
-- [ ] Push new metadata (description/subtitle/keywords/promo/review notes)
-- [ ] Update the IAP display copy in ASC web UI ("The Whole Room")
-- [ ] Kai: App Privacy answer (if still pending), IAP into the review
-      submission, send the reply, Add for Review
+**Everything the API can reach is done. Four steps remain and all four are yours.**
+
+Done and verified by reading each field back:
+
+- [x] **Build 4** archived from HEAD, exported, validated, uploaded, `VALID`
+      (id `3f1b35ec-c546-44c0-9ebf-2f3c8bcaa128`) and **attached** to the 1.0 version.
+      Build 3 was replaced because it predated Spot It, The Climb, The Week, the graded
+      replay and the mode guides, while the uploaded screenshots already showed them.
+      Shipping build 3 with those screenshots would have been a fresh 2.3 mismatch.
+- [x] Description and review notes rewritten to include the modes build 4 adds; both read
+      back from ASC. Sentence-diff against Just Kakuro and Just Hashi: zero shared sentences.
+- [x] Six `APP_IPHONE_65` screenshots, one set, all `COMPLETE`, and they match build 4.
+- [x] Review-detail gates confirmed: `demoAccountRequired` false, contact details set,
+      `privacyPolicyText` present (a URL alone is not enough), age-rating declaration has no
+      null required attributes.
+
+**The readiness gate cannot be run by API, and this is the finding that matters:**
+
+`POST reviewSubmissionItems` fails with `STATE_ERROR.ITEM_PART_OF_ANOTHER_SUBMISSION`:
+
+> appStoreVersions with id 889768760 was already added to another reviewSubmission with id
+> a85832e4-bf0a-4bc5-b08b-020d14bf15ce
+
+The rejected submission still holds the version, and it cannot be released by API:
+`DELETE reviewSubmissionItems/{id}` returns `STATE_ERROR.ENTITY_STATE_INVALID` ("Item was
+already submitted"). So the resubmission has to be started from the ASC web UI, which
+supersedes the old submission itself.
+
+Useful things learned while probing it:
+
+- The old submission holds **two** items: the version (state `REJECTED`) and a second item
+  with no exposed relationship, which is the IAP. Its id is
+  `e95342de-0f8b-4d14-90bd-2812b54d0c66` — the `inAppPurchaseVersion` id the API otherwise
+  never exposes. Worth keeping for future releases.
+- An empty review submission `4fb51550-0de0-43f4-98c6-74b32f106b92` was created while
+  probing the gate. It has **no items** and could not be removed: `reviewSubmissions`
+  refuses `DELETE` outright, and `PATCH canceled:true` returns "not in cancellable state".
+  It is harmless; ASC may simply reuse it when you add items in the web UI.
+
+### Your four steps
+
+- [ ] **App Privacy** → "Data Not Collected", if still unanswered. No public API exists.
+- [ ] **IAP**: change the display name to "The Whole Room" and its description (the API
+      returns `UNMODIFIABLE` while the IAP is `READY_TO_SUBMIT`), then add the IAP to the
+      review submission. Both web-UI only.
+- [ ] **Send the Resolution Center reply**: `AppStore/resolution-reply-draft.md`. Read it
+      first; it is a draft, not a sent message.
+- [ ] **Add for Review / Submit.**
 
 State as of 2026-08-14 (previous submission): everything was prepared in App
 Store Connect on build 2; the version sat in `PREPARE_FOR_SUBMISSION`.
