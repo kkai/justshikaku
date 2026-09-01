@@ -3,14 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Just Shikaku</title>
-<meta name="description" content="The Shikaku that teaches. Seven named techniques, hints that draw the argument on your board, a daily room built around one of them, and proof behind every puzzle.">
+<title>Just Shikaku: the Shikaku that teaches</title>
+<meta name="description" content="Seven named techniques, hints that draw the argument on your board, a daily room built around one of them, and proof behind every puzzle. One purchase, no ads, works offline.">
+<meta property="og:title" content="Just Shikaku: the Shikaku that teaches">
+<meta property="og:description" content="The only Shikaku app with a curriculum. Hints argue instead of answering, and every board is proved solvable by reasoning before you see it.">
+<meta property="og:image" content="https://kaikunze.de/justshikaku/shot-hint.png">
+<meta property="og:url" content="https://kaikunze.de/justshikaku/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <style>
-  /* The app's own palette, from Theme.swift: the lacquered room, seen from
+  /* The app's palette, from Theme.swift: the lacquered room seen from
      above. One committed look, dark only, exactly like the app. No web
-     fonts: the system faces are what the app uses, and a privacy-minded
-     page that phones a font CDN would be saying one thing and doing
-     another. */
+     fonts and no external requests: a privacy-minded page that phoned a
+     font CDN would be saying one thing and doing another. */
   :root {
     --floor: #14100c; --panel: #1e1912; --frame: #282218;
     --ink: #f2eada; --ink-soft: rgba(242,234,218,.72);
@@ -18,39 +23,64 @@
     --hairline: rgba(242,234,218,.14);
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body { margin: 0; background: var(--floor); color: var(--ink);
          font: 17px/1.65 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-  header { padding: 64px 0 8px; text-align: center; }
-  h1 { font-size: 52px; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 0; }
-  /* The wordmark's dash: the drag that lays a mat, corner to corner, with
-     a square tick at each end. The same mark the app draws. */
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+  a { color: var(--heri); }
+  :focus-visible { outline: 2px solid var(--heri); outline-offset: 3px; }
+
+  /* Hero */
+  header { padding: 56px 0 0; text-align: center; }
+  h1 { font-size: 52px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
   .name { position: relative; display: inline-block; }
   .name .dash { position: absolute; left: -4%; right: -2%; top: 18%; bottom: 22%;
                 pointer-events: none; }
-  .tagline { font-size: 21px; color: var(--ink-soft); margin: 18px 0 0; text-align: center; }
-  .lede { font-size: 19px; margin: 34px 0 0; }
-  h2 { font-size: 24px; letter-spacing: -.02em; margin: 52px 0 10px; }
+  .tagline { font-size: 21px; color: var(--ink-soft); margin: 16px 0 0; }
+  .trust { font-size: 15px; color: var(--ink-soft); margin: 14px 0 0; }
+  .badge { display: inline-block; margin: 22px 0 0; }
+  .badge img { height: 48px; width: auto; display: block; }
+
+  h2 { font-size: 25px; letter-spacing: -.02em; margin: 56px 0 10px; }
   h3 { font-size: 17px; margin: 26px 0 4px; }
   p { margin: 0 0 14px; }
-  a { color: var(--heri); }
+  .lede { font-size: 19px; }
   .card { background: var(--panel); border: 1px solid var(--hairline);
-          padding: 26px; margin: 22px 0; }
+          padding: 24px; margin: 20px 0; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 40px; } }
   .cols h3 { margin-top: 0; }
   ul { margin: 0; padding-left: 20px; } li { margin-bottom: 6px; }
-  #board { display: block; margin: 0 auto; max-width: 100%; height: auto;
+
+  /* Boards */
+  .board { display: block; margin: 0 auto; max-width: 100%; height: auto;
            touch-action: manipulation; }
-  #board .cell { cursor: pointer; }
-  .boardnote { text-align: center; color: var(--ink-soft); font-size: 15px;
-               min-height: 26px; margin: 6px 0 0; }
+  .board .cell { cursor: pointer; }
+  .note { text-align: center; color: var(--ink-soft); font-size: 15px;
+          min-height: 44px; margin: 10px 0 0; }
+  .btnrow { text-align: center; margin: 12px 0 0; display: flex;
+            gap: 10px; justify-content: center; flex-wrap: wrap; }
   .btn { display: inline-block; background: var(--ink); color: var(--floor);
-         border: 0; padding: 10px 18px; font: inherit;
-         font-weight: 600; font-size: 15px; cursor: pointer; }
-  .seal { display: inline-block; background: var(--shu); color: var(--ink);
-          font-weight: 700; padding: 2px 8px; }
-  footer { border-top: 1px solid var(--hairline); margin-top: 60px;
+         border: 0; padding: 10px 18px; font: inherit; font-weight: 600;
+         font-size: 15px; cursor: pointer; }
+  .btn.quiet { background: transparent; color: var(--ink-soft);
+               border: 1px solid var(--hairline); }
+
+  /* Screenshot strip */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+           margin: 22px 0 0; }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; height: auto; display: block;
+               border: 1px solid var(--hairline); }
+  .shots figcaption { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
+  @media (max-width: 620px) {
+    .cols { grid-template-columns: 1fr; }
+    .shots { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 38px; }
+  }
+  @media (max-width: 380px) { .shots { grid-template-columns: 1fr; } }
+
+  footer { border-top: 1px solid var(--hairline); margin-top: 64px;
            padding: 22px 0 70px; color: var(--ink-soft); font-size: 14px;
            text-align: center; }
 </style>
@@ -69,61 +99,102 @@
     </span>
   </h1>
   <p class="tagline">The Shikaku that teaches.</p>
+  <p class="trust">Free to play. One purchase unlocks everything. No ads, ever.</p>
+  <p id="cta"></p>
 </header>
 
-<p class="lede">Shikaku hands you a grid of numbers, and you carve it into rectangles
-until every number sits in a rectangle of exactly that many cells. The rules take a
-minute. Playing well takes arguments, ones with names like Prime Strips, Lone Reacher,
-and No Orphans, and those arguments are what this app is about.</p>
+<h2 id="why">Watch it explain itself</h2>
+<div class="card">
+  <p style="margin-top:0;color:var(--ink-soft);font-size:15px">A 3 and a 6 fill a nine cell
+  room. The 3 has exactly one place it can go, and the app can show you why instead of
+  filling it in for you. Press Why.</p>
+  <svg id="argue" class="board" width="328" height="332" viewBox="0 0 328 332"
+       role="img" aria-label="A Shikaku position with the app's argument drawn on it"></svg>
+  <p class="note" id="arguenote">Two numbers, and one of them can only lie one way.</p>
+  <div class="btnrow">
+    <button class="btn" id="whybtn">Why?</button>
+    <button class="btn quiet" id="argreset">Clear</button>
+  </div>
+</div>
 
-<h2>Try it</h2>
+<h2>What no other Shikaku has</h2>
+<p class="lede">Shikaku hands you a grid of numbers, and you carve it into rectangles until
+every number sits in a rectangle of exactly that many cells. The rules take a minute.
+Playing well takes arguments, ones with names, and no other app in this category names
+them, teaches them, or checks whether you used them.</p>
+
+<h3>A curriculum</h3>
+<p>Seven named techniques, each with its own lesson on a real position where that technique
+is the next move. The path runs from the first easy deduction to the counting endgame, and
+seven seals fill as you learn.</p>
+
+<h3>Hints that argue</h3>
+<p>Ask for help and the reasoning climbs a ladder: a nudge, then the technique's name, then
+the full argument drawn on your board, exactly like the demo above. The app can lay the
+rectangle for you, but that is the ladder's last rung and it applies one argued move. Your
+solve stays yours.</p>
+
+<h3>A daily that teaches</h3>
+<p>Everyone gets the same room each day, and each day's room is built around one named
+technique. The week climbs the curriculum, a full week earns its own seal, and missed days
+stay playable because the boards are deterministic.</p>
+
+<h3>The proof</h3>
+<p>After every win the app replays your own solve and checks each rectangle against its
+solver. Moves it can derive from the position you played them in count as worked out, moves
+a hint laid are marked as shown, and correct moves beyond the curriculum's reach are called
+what they are, a leap. No other puzzle app can tell you which of your own moves were
+reasoned, because no other engine here knows why a move is right.</p>
+
+<h3>Training that is training</h3>
+<p>Spot It serves ten real mid-game positions where one technique is the move. The Climb is
+room after room up the difficulty ladder. Both end on three strikes, and neither has a
+clock, because accuracy is the game.</p>
+
+<h2>See it</h2>
+<div class="shots">
+  <figure>
+    <img src="shot-hint.png" alt="The app drawing an argument: candidate rectangles ghosted, dead ones hatched out, and the technique lettered above the board." loading="lazy">
+    <figcaption>The argument, drawn.</figcaption>
+  </figure>
+  <figure>
+    <img src="shot-game.png" alt="A partly solved room, mats laid in green on the dark floor." loading="lazy">
+    <figcaption>Mid-solve.</figcaption>
+  </figure>
+  <figure>
+    <img src="shot-home.png" alt="The front page: the technique path, today's room, this week, and The Climb." loading="lazy">
+    <figcaption>Where you start.</figcaption>
+  </figure>
+  <figure>
+    <img src="shot-lesson.png" alt="A lesson on the Prime Strips technique with its argument on the board." loading="lazy">
+    <figcaption>A lesson.</figcaption>
+  </figure>
+  <figure>
+    <img src="shot-daily.png" alt="Today's room, a seven by seven board built around one technique." loading="lazy">
+    <figcaption>Today's room.</figcaption>
+  </figure>
+  <figure>
+    <img src="shot-win.png" alt="The finished room, stamped with a vermilion seal and the solve time." loading="lazy">
+    <figcaption>Finished.</figcaption>
+  </figure>
+</div>
+
+<h2>Proof behind every board</h2>
+<p>Before a puzzle reaches you, the engine has verified two things: the board has exactly one
+solution, and the taught techniques are enough to reach it. Guessing is never required, on
+any board, at any difficulty. If you are stuck, there is always a next deduction waiting,
+and the hint ladder will walk you to it.</p>
+
+<h2>Try it yourself</h2>
 <div class="card">
   <p style="margin-top:0;color:var(--ink-soft);font-size:15px">Tap a cell, then tap the
   opposite corner of the rectangle you want to lay. Tap a laid rectangle to lift it again.
   This is the board the app's rules lesson uses.</p>
-  <svg id="board" width="374" height="374" viewBox="0 0 374 374" role="application"
-       aria-label="A small Shikaku puzzle you can solve"></svg>
-  <p class="boardnote" id="note">Three numbers, three rectangles, one room.</p>
-  <p style="text-align:center;margin:10px 0 0"><button class="btn" id="reset">Start over</button></p>
+  <svg id="board" class="board" width="374" height="374" viewBox="0 0 374 374"
+       role="application" aria-label="A small Shikaku puzzle you can solve"></svg>
+  <p class="note" id="note">Three numbers, three rectangles, one room.</p>
+  <div class="btnrow"><button class="btn" id="reset">Start over</button></div>
 </div>
-
-<h2>What no other Shikaku has</h2>
-
-<h3>A curriculum</h3>
-<p>Seven named techniques, each with its own lesson on a real position where that
-technique is the next move. The path runs from the first easy deduction to the counting
-endgame, and seven seals fill as you learn.</p>
-
-<h3>Hints that argue</h3>
-<p>Ask for help and the reasoning climbs a ladder: a nudge, then the technique's name,
-then the full argument drawn on your board. You see the candidates that could work, the
-ones that die under hatching, and the cell that decides it, with the technique lettered
-above the grid. The app can lay the rectangle for you, but that is the ladder's last
-rung and it applies exactly one argued move. Your solve stays yours.</p>
-
-<h3>A daily that teaches</h3>
-<p>Everyone gets the same room each day, and each day's room is built around one named
-technique. The week climbs the curriculum, a full week earns its own seal, and missed
-days stay playable because the boards are deterministic.</p>
-
-<h3>The proof</h3>
-<p>After every win, the app replays your own solve and checks each rectangle against its
-solver. Moves it can derive from the position you played them in count as worked out;
-moves a hint laid are marked as shown; correct moves beyond the curriculum's reach are
-called what they are, a leap. No other puzzle app can tell you which of your own moves
-were reasoned, because no other engine in this category knows why a move is right.</p>
-
-<h3>Training that is training</h3>
-<p>Spot It serves ten real mid-game positions where one technique is the move; lay the
-right mat or take a strike, and three strikes end the run. The Climb is room after room
-up the difficulty ladder under the same three strikes. There is no clock anywhere in
-either. Accuracy is the game.</p>
-
-<h2>Proof behind every board</h2>
-<p>Before a puzzle reaches you, the engine has verified two things: the board has
-exactly one solution, and the taught techniques are enough to reach it. Guessing is
-never required, on any board, at any difficulty. If you are stuck, there is always a
-next deduction waiting, and the hint ladder will walk you to it.</p>
 
 <h2>What it costs</h2>
 <div class="cols">
@@ -131,7 +202,8 @@ next deduction waiting, and the hint ladder will walk you to it.</p>
     <h3>Free forever</h3>
     <ul>
       <li>The rules and the first two technique lessons</li>
-      <li>The daily room, its streak, and the weekly seal</li>
+      <li>Today's room, its streak, and the weekly seal</li>
+      <li>The Climb, room after room</li>
       <li>5x5 and 7x7 boards at every difficulty, including the hardest</li>
       <li>An error check that flags a mat that cannot stay</li>
       <li>Best times</li>
@@ -148,8 +220,9 @@ next deduction waiting, and the hint ladder will walk you to it.</p>
     </ul>
   </div>
 </div>
-<p>One purchase. No subscription, and no ads. Hints are never a currency, and difficulty
-is never behind the purchase. Everything works offline.</p>
+<p>One purchase. No subscription, and no ads. Hints are never a currency, and difficulty is
+never behind the purchase. Everything works offline.</p>
+<p id="cta2" style="text-align:center"></p>
 
 <h2>Privacy</h2>
 <div class="card">
@@ -167,8 +240,8 @@ thinks it is unlocked. If nothing comes back, check you are signed in with the A
 that made the purchase.</p>
 
 <h3>Does it work offline?</h3>
-<p>Yes, entirely. Every board is built on your device. The one network request the app
-ever makes is asking the App Store whether the unlock has been purchased.</p>
+<p>Yes, entirely. Every board is built on your device. The one network request the app ever
+makes is asking the App Store whether the unlock has been purchased.</p>
 
 <h3>Where does my progress live?</h3>
 <p>On the device, in the app's own storage. There is no cloud sync, so deleting the app
@@ -191,6 +264,263 @@ wrong, mail me and say which one.</p>
 
 </div>
 
+<script>
+// ---------------------------------------------------------------------------
+// The App Store badge. Set LIVE to true the day the app is approved; the
+// badge then appears in the hero and beside the price, and nothing else
+// needs touching. Until then the page simply does not promise a download.
+// ---------------------------------------------------------------------------
+var LIVE = false;
+var APP_URL = 'https://apps.apple.com/app/id6801529551';
+
+(function () {
+  if (!LIVE) return;
+  ['cta', 'cta2'].forEach(function (id) {
+    var host = document.getElementById(id);
+    if (!host) return;
+    var a = document.createElement('a');
+    a.href = APP_URL;
+    a.className = 'badge btn';
+    a.textContent = 'Download on the App Store';
+    host.appendChild(a);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+// The app's own digits. Same 12x20 stroke coordinates as Design/Numerals.swift,
+// so the numbers on this page are drawn by the same hand as the numbers on the
+// board. No font file, no network request.
+// ---------------------------------------------------------------------------
+var NS = 'http://www.w3.org/2000/svg';
+var GLYPHS = {
+  0: ['1,1 11,1 11,19 1,19 1,1', '1,1 11,19'],
+  1: ['3,4 7,1 7,19', '2,19 11,19'],
+  2: ['1,4 1,1 11,1 11,9 1,9 1,19 11,19'],
+  3: ['1,1 11,1 11,19 1,19', '4,9 11,9'],
+  4: ['8,19 8,1 1,12 11,12'],
+  5: ['11,1 1,1 1,9 11,9 11,19 1,19 1,16'],
+  6: ['10,1 1,1 1,19 11,19 11,9 1,9'],
+  7: ['1,4 1,1 11,1 5,19'],
+  8: ['1,9 1,1 11,1 11,9 1,9 1,19 11,19 11,9'],
+  9: ['11,9 1,9 1,1 11,1 11,19 2,19']
+};
+
+
+/** The same 12x20 glyph, placed directly in a board's own coordinates, so
+    both demos on this page draw their numbers with the app's hand. */
+function boardNumeral(value, cx, cy, opts) {
+  opts = opts || {};
+  var h = opts.height || 34;
+  var weight = opts.weight || 2.1;
+  var color = opts.color || 'var(--ink)';
+  var unit = h / 20, dw = 10 * unit;
+  var digits = String(value).split('');
+  var totalW = digits.length * dw;
+  var g = document.createElementNS(NS, 'g');
+  digits.forEach(function (d, i) {
+    var gg = document.createElementNS(NS, 'g');
+    gg.setAttribute('transform',
+      'translate(' + (cx - totalW / 2 + i * dw) + ',' + (cy - h / 2) +
+      ') scale(' + (unit * 0.8) + ',' + unit + ')');
+    (GLYPHS[d] || []).forEach(function (points) {
+      var p = document.createElementNS(NS, 'polyline');
+      p.setAttribute('points', points);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', color);
+      p.setAttribute('stroke-width', weight);
+      p.setAttribute('stroke-linecap', 'square');
+      p.setAttribute('stroke-linejoin', 'miter');
+      gg.appendChild(p);
+    });
+    g.appendChild(gg);
+  });
+  return g;
+}
+
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// The signature: the app's argument, drawn.
+//
+// A real Prime Strips position. The 3 is prime, so it can only be a strip one
+// cell wide; the walls and the laid mat leave exactly one place for it. The
+// stages are the app's own (ArgumentOverlay): candidates ghost in as dashed
+// rectangles, the dead ones go under hand-ruled hatching, the survivor is
+// ringed in shu, and the technique is lettered above the grid in spaced
+// vermilion capitals. Nothing here is a mock-up of a competitor's page; it is
+// what the app draws, in the app's vocabulary.
+// ---------------------------------------------------------------------------
+(function () {
+  var COLS = 3, ROWS = 3, CELL = 96, PAD = 20, TOP = 44;
+  var svg = document.getElementById('argue');
+  var note = document.getElementById('arguenote');
+  if (!svg) return;
+
+  // A 3x3 room holding a 3 and a 6, which is the whole grid: 3 + 6 = 9.
+  // The 6 is already laid across the right two columns, so the 3 has to be
+  // the left column. Every number here is true of this board; the argument
+  // the page draws is the argument the app would draw.
+  var clues = [
+    { col: 0, row: 0, value: 3 },
+    { col: 1, row: 0, value: 6 }
+  ];
+  var laid = [{ c0: 1, r0: 0, c1: 2, r1: 2 }];   // the 6, two columns wide
+  var answer = { c0: 0, r0: 0, c1: 0, r1: 2 };   // the 3's only strip
+  // Strips of three that the 3 could want, and that the 6 rules out.
+  var dead = [
+    { c0: 0, r0: 0, c1: 2, r1: 0 },
+    { c0: 0, r0: 2, c1: 2, r1: 2 }
+  ];
+  var stage = 0;   // 0 nothing, 1 candidates, 2 hatching, 3 the survivor
+
+  var reduce = window.matchMedia &&
+               window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function el(name, attrs) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function px(col) { return PAD + col * CELL; }
+  function py(row) { return TOP + row * CELL; }
+  function rectOf(r) {
+    return { x: px(r.c0), y: py(r.r0),
+             w: (r.c1 - r.c0 + 1) * CELL, h: (r.r1 - r.r0 + 1) * CELL };
+  }
+
+  /** Hand-ruled hatching, the app's mark for "this one is dead". */
+  function hatch(r, into) {
+    var b = rectOf(r);
+    var clip = 'clip' + r.c0 + r.r0 + r.c1 + r.r1;
+    var defs = el('defs', {});
+    var cp = el('clipPath', { id: clip });
+    cp.appendChild(el('rect', { x: b.x, y: b.y, width: b.w, height: b.h }));
+    defs.appendChild(cp);
+    into.appendChild(defs);
+    var g = el('g', { 'clip-path': 'url(#' + clip + ')' });
+    for (var o = -b.h; o < b.w + b.h; o += 9) {
+      g.appendChild(el('line', {
+        x1: b.x + o, y1: b.y + b.h, x2: b.x + o + b.h, y2: b.y,
+        stroke: 'var(--ink)', 'stroke-opacity': .42, 'stroke-width': 1.2
+      }));
+    }
+    into.appendChild(g);
+  }
+
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    // The technique, lettered above the plan.
+    if (stage >= 1) {
+      var t = el('text', {
+        x: PAD + COLS * CELL / 2, y: 26, 'text-anchor': 'middle',
+        fill: 'var(--shu)', 'font-size': 13, 'font-weight': 600,
+        'letter-spacing': 3.4,
+        'font-family': '-apple-system, system-ui, sans-serif'
+      });
+      t.textContent = 'PRIME STRIPS';
+      svg.appendChild(t);
+    }
+
+    // Floor and lattice.
+    svg.appendChild(el('rect', { x: PAD, y: TOP, width: COLS * CELL,
+                                 height: ROWS * CELL, fill: 'var(--floor)' }));
+    for (var c = 1; c < COLS; c++) {
+      svg.appendChild(el('line', { x1: px(c), y1: TOP, x2: px(c), y2: TOP + ROWS * CELL,
+                                   stroke: 'var(--hairline)', 'stroke-width': 1.5 }));
+    }
+    for (var r = 1; r < ROWS; r++) {
+      svg.appendChild(el('line', { x1: PAD, y1: py(r), x2: PAD + COLS * CELL, y2: py(r),
+                                   stroke: 'var(--hairline)', 'stroke-width': 1.5 }));
+    }
+
+    // Stage 1: every strip the 3 could take, ghosted in.
+    if (stage >= 1) {
+      dead.concat([answer]).forEach(function (r) {
+        var b = rectOf(r);
+        svg.appendChild(el('rect', {
+          x: b.x + 4, y: b.y + 4, width: b.w - 8, height: b.h - 8,
+          fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': .55,
+          'stroke-width': 1.5, 'stroke-dasharray': '6 5'
+        }));
+      });
+    }
+    // The mat already laid.
+    laid.forEach(function (m) {
+      var b = rectOf(m);
+      svg.appendChild(el('rect', { x: b.x + 2, y: b.y + 2, width: b.w - 4, height: b.h - 4,
+                                   fill: 'var(--mat)', stroke: 'var(--heri)',
+                                   'stroke-width': 2 }));
+    });
+
+    // Stage 2: the strips that die, ruled out by hand. The hatching runs
+    // straight across the laid mat on purpose: colliding with that mat is
+    // exactly why those strips are dead, so the collision is the evidence.
+    if (stage >= 2) dead.forEach(function (r) { hatch(r, svg); });
+
+    // Stage 3: the survivor is clean ground. Painting the floor back over it
+    // is what makes "everything else is crossed out" legible; a ring on top
+    // of hatching would say two things at once.
+    if (stage >= 3) {
+      var b = rectOf(answer);
+      svg.appendChild(el('rect', { x: b.x + 1, y: b.y + 1,
+                                   width: b.w - 2, height: b.h - 2,
+                                   fill: 'var(--floor)' }));
+      svg.appendChild(el('rect', {
+        x: b.x + 3, y: b.y + 3, width: b.w - 6, height: b.h - 6,
+        fill: 'none', stroke: 'var(--shu)', 'stroke-width': 3
+      }));
+    }
+
+    // The room's frame.
+    svg.appendChild(el('rect', { x: PAD, y: TOP, width: COLS * CELL, height: ROWS * CELL,
+                                 fill: 'none', stroke: 'var(--ink)', 'stroke-width': 4 }));
+
+    // Clue numerals, drawn with the app's own glyphs.
+    clues.forEach(function (q) {
+      var housed = laid.some(function (m) {
+        return q.col >= m.c0 && q.col <= m.c1 && q.row >= m.r0 && q.row <= m.r1;
+      });
+      svg.appendChild(boardNumeral(q.value, px(q.col) + CELL / 2,
+                                   py(q.row) + CELL / 2,
+                                   { weight: housed ? 1.5 : 2.1 }));
+    });
+  }
+
+  var LINES = [
+    'Two numbers, and one of them can only lie one way.',
+    'A 3 is prime, so it can only be a strip. Here are the strips it could take.',
+    'The across ones run into the 6 that is already down, so they are out.',
+    'One place is left, and the app told you why instead of filling it in.'
+  ];
+
+  function advance() {
+    if (stage >= 3) return;
+    stage += 1;
+    note.textContent = LINES[stage];
+    draw();
+    if (stage < 3) {
+      if (reduce) { advance(); }
+      else { setTimeout(advance, 1100); }
+    } else {
+      document.getElementById('whybtn').disabled = true;
+    }
+  }
+
+  document.getElementById('whybtn').addEventListener('click', function () {
+    if (stage === 0) advance();
+  });
+  document.getElementById('argreset').addEventListener('click', function () {
+    stage = 0;
+    note.textContent = LINES[0];
+    document.getElementById('whybtn').disabled = false;
+    draw();
+  });
+
+  draw();
+})();
+</script>
 <script>
 (function () {
   // The rules lesson's board, exactly as the app's tutorial defines it: a
@@ -259,17 +589,12 @@ wrong, mail me and say which one.</p>
     // The room's frame.
     svg.appendChild(el('rect', { x: PAD, y: PAD, width: N * CELL, height: N * CELL,
                                  fill: 'none', stroke: 'var(--ink)', 'stroke-width': 5 }));
-    // Clue numerals, in the plan's monospaced hand.
+    // Clue numerals, drawn with the app's own glyphs. A housed clue relaxes
+    // to a lighter stroke, exactly as it does on the board in the app.
     clues.forEach(function (q) {
       var inMat = matAt(q.col, q.row) >= 0;
-      var t = el('text', {
-        x: px(q.col) + CELL / 2, y: px(q.row) + CELL / 2 + 12, 'text-anchor': 'middle',
-        fill: inMat ? 'var(--heri)' : 'var(--ink)',
-        'font-size': 34, 'font-weight': inMat ? 400 : 600,
-        'font-family': 'ui-monospace, Menlo, monospace'
-      });
-      t.textContent = q.value;
-      svg.appendChild(t);
+      svg.appendChild(boardNumeral(q.value, px(q.col) + CELL / 2, px(q.row) + CELL / 2,
+                                   { height: 40, weight: inMat ? 1.6 : 2.4 }));
     });
     // One invisible tap target per cell, on top of everything.
     for (var row = 0; row < N; row++) {
