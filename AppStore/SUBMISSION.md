@@ -151,7 +151,7 @@ python3 Tools/AppIcon/make_icons.py         # app icon (Lacquered Measure; check
 ```
 
 Metadata and screenshots go up through AppShip
-(`../appstoreconnect/appship/.build/release/AppShip`), **always with
+(`../../studio/appstoreconnect/appship/.build/release/AppShip`), **always with
 `--platform IOS`**. Verify uploads through the API, never the exit code:
 screenshots carry `assetDeliveryState`, IAP images carry `state`
 (`PREPARE_FOR_SUBMISSION` is healthy), builds are real only when
@@ -160,7 +160,7 @@ screenshots carry `assetDeliveryState`, IAP images carry `state`
 ## 5. Build and upload
 
 ```bash
-ISSUER=$(grep -E "^[0-9a-f-]{36}$" ../appstoreconnect/credentials.txt)
+ISSUER=$(grep -E "^[0-9a-f-]{36}$" ../../studio/appstoreconnect/credentials.txt)
 xcodebuild archive -project Shikaku.xcodeproj -scheme Shikaku -configuration Release \
   -destination 'generic/platform=iOS' -archivePath build/JustShikaku.xcarchive \
   -allowProvisioningUpdates \

@@ -4,7 +4,7 @@
 Those are shipping, tested implementations of this exact product shape —
 human-technique solver, teaching hint engine, practice drills, mastery
 tracking, one-time unlock. Their `docs/ENGINEERING.md` files record mistakes
-already paid for. **Read `../numeriqo_new/docs/ENGINEERING.md` and
+already paid for. **Read `../numeriqo/docs/ENGINEERING.md` and
 `../kakuro/docs/ENGINEERING.md` before starting.** Deviate only where Shikaku
 genuinely differs.
 

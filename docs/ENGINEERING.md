@@ -1,7 +1,7 @@
 # Engineering notes
 
 Working notes: invariants and things that have already gone wrong once —
-here or in a sibling. Inherits `../../numeriqo_new/docs/ENGINEERING.md` and
+here or in a sibling. Inherits `../../numeriqo/docs/ENGINEERING.md` and
 `../../kakuro/docs/ENGINEERING.md`; the sections below repeat only what is
 load-bearing or Shikaku-specific.
 
@@ -139,7 +139,7 @@ outline conveys and speech cannot).
 ## Driving the simulator
 
 fb-idb from **a single Python process** (chained `idb ui tap` in a shell loop
-drops taps): `/Users/kai/work/areas/ios/kakuro/venv/bin/idb`. Check liveness
+drops taps): `/Users/kai/work/areas/ios/studio/idb-venv/bin/idb`. Check liveness
 separately (`xcrun simctl spawn <udid> launchctl list | grep -i shikaku`) — a
 dropped tap and a dead app look identical. Coordinates are points; iPhone 16
 Pro is 402×874 @3x.

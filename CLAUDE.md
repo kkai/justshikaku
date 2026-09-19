@@ -1,6 +1,6 @@
 # CLAUDE.md — Just Shikaku
 
-iPhone puzzle game (iOS 18.5+) teaching Shikaku (rectangle partition), modeled on Good Sudoku. Clone #4 of the family `../kakuro` → `../Hashi` → `../numeriqo_new` — same architecture, same invariants. Deep engineering notes: `docs/ENGINEERING.md` (and `../numeriqo_new/docs/ENGINEERING.md` + `../kakuro/docs/ENGINEERING.md` for the lessons this project inherits).
+iPhone puzzle game (iOS 18.5+) teaching Shikaku (rectangle partition), modeled on Good Sudoku. Clone #4 of the family `../kakuro` → `../hashi` → `../numeriqo` — same architecture, same invariants. Deep engineering notes: `docs/ENGINEERING.md` (and `../numeriqo/docs/ENGINEERING.md` + `../kakuro/docs/ENGINEERING.md` for the lessons this project inherits).
 
 ## Critical invariants
 

@@ -35,7 +35,7 @@ import subprocess
 import sys
 import time
 
-IDB = "/Users/kai/work/areas/ios/kakuro/venv/bin/idb"
+IDB = "/Users/kai/work/areas/ios/studio/idb-venv/bin/idb"
 BUNDLE = "de.kaikunze.shikaku"
 APP = "/tmp/shikaku-shots/Build/Products/Debug-iphonesimulator/Shikaku.app"
 ROOT = os.path.dirname(os.path.abspath(__file__))
